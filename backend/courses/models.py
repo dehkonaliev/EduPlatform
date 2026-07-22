@@ -89,7 +89,37 @@ class Course(BaseModel):
     def __str__(self):
         return self.title
     
-    
+
+class Module(BaseModel):
+    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE, related_name='modules')
+    title = models.CharField(max_length=255)
+    order = models.PositiveIntegerField(default=0)  # for drag-and-drop reordering
+
+    class Meta:
+        ordering = ['order']
+        
+        
+class Lesson(BaseModel):
+    class LessonType(models.TextChoices):
+        VIDEO = 'VIDEO', 'Video'
+        ARTICLE = 'ARTICLE', 'Article'
+        QUIZ = 'QUIZ', 'Quiz'
+        ASSIGNMENT = 'ASSIGNMENT', 'Assignment'
+
+    module = models.ForeignKey('courses.Module', on_delete=models.CASCADE, related_name='lessons')
+    title = models.CharField(max_length=255)
+    lesson_type = models.CharField(max_length=20, choices=LessonType.choices, default=LessonType.VIDEO)
+    video_url = models.URLField(blank=True, null=True)
+    content = models.TextField(blank=True, null=True)  # for articles
+    duration_minutes = models.PositiveIntegerField(default=0)
+    order = models.PositiveIntegerField(default=0)
+    is_preview = models.BooleanField(default=False)  # free preview lesson, visible before enrollment
+
+    class Meta:
+        ordering = ['order']
+        
+    def __str__(self):
+        return f"{self.module.title} {self.title}"
         
     
     
