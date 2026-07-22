@@ -56,7 +56,7 @@ class CustomUser(AbstractUser, BaseModel):
         super().save(*args, **kwargs)   
         
 
-class UserPreference(models.Model):
+class UserPreference(BaseModel):
     class ThemeMode(models.TextChoices):
         LIGHT = 'LIGHT', 'dark'
         DARK = 'DARK', 'dark'
