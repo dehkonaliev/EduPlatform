@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from baseapp.models import BaseModel
+import uuid
+from .manager import CustomUserManager
 
 
 class CustomUser(AbstractUser, BaseModel):
@@ -39,11 +41,18 @@ class CustomUser(AbstractUser, BaseModel):
     photo = models.ImageField(upload_to='users/', blank=True, null=True)
     
     #To avoid default required username field problem!
-    USERNAME_FIELD = email
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    
+    objects = CustomUserManager()
     
     @property
     def is_verified(self):
         return self.email_verified or self.phone_verified
+    
+    def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = f"user_{uuid.uuid4().hex[:12]}"
+        super().save(*args, **kwargs)   
     
     
