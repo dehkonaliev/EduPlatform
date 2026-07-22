@@ -54,5 +54,21 @@ class CustomUser(AbstractUser, BaseModel):
         if not self.username:
             self.username = f"user_{uuid.uuid4().hex[:12]}"
         super().save(*args, **kwargs)   
+        
+        
+class UserPreference(models.Model):
+    class ThemeMode(models.TextChoices):
+        LIGHT = 'LIGHT', 'dark'
+        DARK = 'DARK', 'dark'
+        SYSTEM = 'SYSTEM', 'system'
+        
+    user = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='preference')
+    language = models.CharField(max_length=20, default='en')
+    timezone = models.CharField(max_length=50, default='UTC')
+    email_notifications = models.BooleanField(default=True)
+    push_notifications = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.user
     
     
