@@ -8,7 +8,7 @@ from .manager import CustomUserManager
 class CustomUser(AbstractUser, BaseModel):
     class UserRole(models.TextChoices):
         STUDENT = 'STUDENT', 'student'
-        CONTRIBUTOR = 'CONTRIBUTOR', 'contributor'
+        CONTRIBUTOR = 'INSTRUCTOR', 'instructor'
         SUPERUSER = 'SUPERUSER', 'superuser'
         
     class AuthType(models.TextChoices):
@@ -55,7 +55,7 @@ class CustomUser(AbstractUser, BaseModel):
             self.username = f"user_{uuid.uuid4().hex[:12]}"
         super().save(*args, **kwargs)   
         
-        
+
 class UserPreference(models.Model):
     class ThemeMode(models.TextChoices):
         LIGHT = 'LIGHT', 'dark'
