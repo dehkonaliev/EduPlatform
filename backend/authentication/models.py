@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from baseapp.models import BaseModel
 import uuid
 from .manager import CustomUserManager
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from core import settings
 
 
@@ -69,7 +69,7 @@ class CodeVerify(BaseModel):
     verify_type = models.CharField(max_length=10, choices=VerifyType.choices)
     is_used = models.BooleanField(default=False)
     
-    def _str__(self):
+    def __str__(self):
         return f"{self.user.username} code: {self.code}" #17:42   17:43
     
     def save(self, *args, **kwargs):
@@ -77,7 +77,7 @@ class CodeVerify(BaseModel):
             expire = settings.EMAIL_EXPIRATION_TIME
         else:
             expire = settings.PHONE_EXPIRATION_TIME
-        self.expire_time = datetime.now() + timedelta(minutes=expire)
+        self.expire_time = timezone.now() + timedelta(minutes=expire)
         
         return super().save(*args, **kwargs)
         
