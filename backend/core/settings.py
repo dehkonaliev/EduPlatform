@@ -117,3 +117,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
+
+EMAIL_EXPIRATION_TIME = 3
+PHONE_EXPIRATION_TIME = 2

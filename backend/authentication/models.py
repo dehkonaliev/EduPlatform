@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from baseapp.models import BaseModel
 import uuid
 from .manager import CustomUserManager
+from datetime import timedelta, datetime
+from core import settings
 
 
 class CustomUser(AbstractUser, BaseModel):
@@ -53,7 +55,33 @@ class CustomUser(AbstractUser, BaseModel):
     def save(self, *args, **kwargs):
         if not self.username:
             self.username = f"user_{uuid.uuid4().hex[:12]}"
-        super().save(*args, **kwargs)   
+        super().save(*args, **kwargs)
+        
+        
+class CodeVerify(BaseModel):
+    class VerifyType(models.TextChoices):
+        VIA_EMAIL = 'VIA_EMAIL', 'via_email'
+        VIA_PHONE = 'VIA_PHONE', 'via_phone'
+    
+    code = models.CharField(max_length=4)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='codes')
+    expire_time = models.DateTimeField()
+    verify_type = models.CharField(max_length=10, choices=VerifyType.choices)
+    is_used = models.BooleanField(default=False)
+    
+    def _str__(self):
+        return f"{self.user.username} code: {self.code}" #17:42   17:43
+    
+    def save(self, *args, **kwargs):
+        if self.verify_type == self.VerifyType.VIA_EMAIL:
+            expire = settings.EMAIL_EXPIRATION_TIME
+        else:
+            expire = settings.PHONE_EXPIRATION_TIME
+        self.expire_time = datetime.now() + timedelta(minutes=expire)
+        
+        return super().save(*args, **kwargs)
+        
+
         
 
 class UserPreference(BaseModel):
