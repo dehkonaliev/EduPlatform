@@ -57,6 +57,7 @@ class Course(BaseModel):
     
     #PRICING
     is_free = models.BooleanField(default=False)
+    is_monthly = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
     class Status(models.TextChoices):
