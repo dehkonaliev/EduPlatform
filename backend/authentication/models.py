@@ -3,7 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from baseapp.models import BaseModel
 import uuid
 from .manager import CustomUserManager
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta
+from django.utils import timezone
 from core import settings
 
 
@@ -63,14 +64,14 @@ class CodeVerify(BaseModel):
         VIA_EMAIL = 'VIA_EMAIL', 'via_email'
         VIA_PHONE = 'VIA_PHONE', 'via_phone'
     
-    code = models.CharField(max_length=4)
+    code = models.CharField(max_length=6)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='codes')
-    expire_time = models.DateTimeField()
+    expire_time = models.DateTimeField(blank=True, null=True)
     verify_type = models.CharField(max_length=10, choices=VerifyType.choices)
     is_used = models.BooleanField(default=False)
     
     def __str__(self):
-        return f"{self.user.username} code: {self.code}" #17:42   17:43
+        return f"{self.user.username} code: {self.code}"
     
     def save(self, *args, **kwargs):
         if self.verify_type == self.VerifyType.VIA_EMAIL:
