@@ -74,12 +74,13 @@ class CodeVerify(BaseModel):
         return f"{self.user.username} code: {self.code}"
     
     def save(self, *args, **kwargs):
-        if self.verify_type == self.VerifyType.VIA_EMAIL:
-            expire_min = settings.EMAIL_EXPIRATION_TIME
-        else:
-            expire_min = settings.PHONE_EXPIRATION_TIME
-        self.expire_time = timezone.now() + timedelta(minutes=expire_min)
-        
+        if not self.pk: # Changes the expire time only once
+            expire_min = (
+                settings.EMAIL_EXPIRATION_TIME
+                if self.verify_type == self.VerifyType.VIA_EMAIL
+                else settings.PHONE_EXPIRATION_TIME
+            )
+            self.expire_time = timezone.now() + timedelta(minutes=expire_min)
         return super().save(*args, **kwargs)
         
 
