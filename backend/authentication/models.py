@@ -75,10 +75,10 @@ class CodeVerify(BaseModel):
     
     def save(self, *args, **kwargs):
         if self.verify_type == self.VerifyType.VIA_EMAIL:
-            expire = settings.EMAIL_EXPIRATION_TIME
+            expire_min = settings.EMAIL_EXPIRATION_TIME
         else:
-            expire = settings.PHONE_EXPIRATION_TIME
-        self.expire_time = timezone.now() + timedelta(minutes=expire)
+            expire_min = settings.PHONE_EXPIRATION_TIME
+        self.expire_time = timezone.now() + timedelta(minutes=expire_min)
         
         return super().save(*args, **kwargs)
         
@@ -90,6 +90,8 @@ class UserPreference(BaseModel):
         LIGHT = 'LIGHT', 'dark'
         DARK = 'DARK', 'dark'
         SYSTEM = 'SYSTEM', 'system'
+        
+    theme = models.CharField(max_length=10, choices=ThemeMode.choices, default=ThemeMode.SYSTEM)
         
     user = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='preference')
     language = models.CharField(max_length=20, default='en')
