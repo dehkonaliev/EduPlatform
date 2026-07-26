@@ -56,8 +56,11 @@ class Course(BaseModel):
     intro_video = models.URLField(blank=True, null=True)
     
     #PRICING
-    is_free = models.BooleanField(default=False)
-    is_monthly = models.BooleanField(default=False)
+    class PricingType(models.TextChoices):
+        FREE = 'FREE', 'free'
+        MONTHLY = 'MONTHLY', 'monthly'
+        SPECIAL = 'SPECIAL', 'special'
+    pricing_type = models.CharField(max_length=10, choices=PricingType.choices, default=PricingType.MONTHLY)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
     class Status(models.TextChoices):

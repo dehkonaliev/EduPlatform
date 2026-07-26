@@ -40,6 +40,22 @@ class Enrollment(BaseModel):
         def __str__(self):
             return f"{self.student.email} -> {self.course.title}"
         
+
+class LessonProgress(BaseModel):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='lessons_progress')
+    lesson = models.ForeignKey('courses.Lesson', on_delete=models.CASCADE, related_name='progress_records')
+    
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ['enrollment', 'lesson']
+        
+    def save(self, *args, **kwargs):
+        if self.is_completed and not self.completed_at:
+            self.completed_at = timezone.now()
+        super().save(*args, **kwargs)
+        
     
     
     

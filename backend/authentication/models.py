@@ -56,6 +56,9 @@ class CustomUser(AbstractUser, BaseModel):
     def save(self, *args, **kwargs):
         if not self.username:
             self.username = f"user_{uuid.uuid4().hex[:12]}"
+            
+        if not self.pk:
+            self.set_unusable_password()
         super().save(*args, **kwargs)
         
         
