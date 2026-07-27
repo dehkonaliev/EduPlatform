@@ -10,7 +10,7 @@ from core import settings
 class CustomUser(AbstractUser, BaseModel):
     class UserRole(models.TextChoices):
         STUDENT = 'STUDENT', 'student'
-        CONTRIBUTOR = 'INSTRUCTOR', 'instructor'
+        INSTRUCTOR = 'INSTRUCTOR', 'instructor'
         SUPERUSER = 'SUPERUSER', 'superuser'
         
     class AuthType(models.TextChoices):

@@ -5,12 +5,15 @@ from .models import CustomUser, CodeVerify
 from .utils import generate_code
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer)
+from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer)
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError
+from django.db.models import Q
 
 
 
 
-class SignUpAPIView(APIView):
+class EmailOrPhoneAPIView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = EmailOrPhoneSerializer(data=request.data)
@@ -18,6 +21,10 @@ class SignUpAPIView(APIView):
         user = serializer.save()
         
         auth_type = serializer.validated_data.get('auth_type')
+        last_code = user.codes.order_by('-expire_time').first()
+        
+        if last_code.expire_time > timezone.now():
+            raise ValidationError("Please wait until your current code expires before requesting a new one.")
         
         code = generate_code(user, auth_type)
         if auth_type == 'VIA_EMAIL':
@@ -59,6 +66,28 @@ class VerifyCodeAPIView(APIView):
                 'phone': user.phone_number,
                 'status': status.HTTP_200_OK
             })
+            
+class ActivateUserAPIView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        email_or_phone = request.data.get('email_or_phone')
+        user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
+        if not user:
+            raise ValidationError("User does not exists!")
+        
+        
+        serializer = ActivateUserSerializer(instance=user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response({
+            'message': "User Activated!",
+            'status': status.HTTP_200_OK,
+            'data': serializer.data
+        })
+        
+        
             
         
         
