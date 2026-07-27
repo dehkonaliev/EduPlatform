@@ -1,7 +1,7 @@
 ### AUTHENTICATION
 -------------------------------------
 Activation Process - ✅
-Login - 
+Login - ✅
 Logout - 
 Delete Account -
 Send Email verification - 
