@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+from baseapp.emails import send_verification_code
 from django.db.models import Q
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
                           LogoutSerializer)
@@ -24,11 +25,12 @@ class EmailOrPhoneAPIView(APIView):
         auth_type = serializer.validated_data.get('auth_type')
         last_code = user.codes.order_by('-expire_time').first()
         
-        if last_code.expire_time > timezone.now():
+        if last_code and last_code.expire_time > timezone.now():
             raise ValidationError("Please wait until your current code expires before requesting a new one.")
         
         code = generate_code(user, auth_type)
         if auth_type == 'VIA_EMAIL':
+            send_verification_code(user.email, code)
             return Response({
                 'message': "Code sent to the email. Please check your email",
                 'email': user.email,

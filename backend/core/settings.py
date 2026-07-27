@@ -72,7 +72,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,3 +138,18 @@ AUTH_USER_MODEL = 'authentication.CustomUser'
 
 EMAIL_EXPIRATION_TIME = 100
 PHONE_EXPIRATION_TIME = 100
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'          # Change to your provider's SMTP host
+EMAIL_PORT = 587                       # 587 for TLS, 465 for SSL
+EMAIL_USE_TLS = True                   # Use True for TLS
+EMAIL_USE_SSL = False                  # Use True if using port 465 instead
+
+# Authentication credentials
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') 
+EMAIL_HOST_PASSWORD = os.environ.get('APP_PASSWORD')
+
+# Default sender address
+DEFAULT_FROM_EMAIL = 'Webmaster <your-email@example.com>'
