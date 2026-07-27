@@ -2,7 +2,9 @@ from rest_framework import serializers
 from .models import CustomUser
 from .utils import check_email_or_phone
 from rest_framework.exceptions import ValidationError
+from django.db.models import Q
 import uuid
+from django.utils import timezone
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,12 +63,28 @@ class EmailOrPhoneSerializer(serializers.Serializer):
 
 class VerifyCodeSerializer(serializers.Serializer):
     verification_code = serializers.CharField()
+    email_or_phone = serializers.CharField(required=False)
     
     def validate(self, attrs):
-        code = attrs.get('verification_code')
+        code = attrs['verification_code']
+        email_or_phone = attrs['email_or_phone']
+        
         if not code.isdigit() and len(code) != 6:
             raise ValidationError("The verification code is incorrect!")
         
+        user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
+        
+        if not user:
+            raise ValidationError("User Not Found!")
+        
+        verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
+        if not verification:
+            raise ValidationError("Invalid code!")
+        elif verification.expire_time < timezone.now():
+            raise ValidationError("Code expired!")
+        
+        attrs['verification'] = verification
+        attrs['user'] = user
         return attrs
         
          

@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from .serializers import EmailOrPhoneSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import CustomUser, CodeVerify
 from .utils import generate_code
 from rest_framework.response import Response
 from rest_framework import status
+from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer)
+
 
 
 
@@ -31,6 +32,38 @@ class SignUpAPIView(APIView):
                 'email': user.phone_number,
                 'status': status.HTTP_200_OK
             })
+            
+class VerifyCodeAPIView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = VerifyCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user = serializer.validated_data.get('user')
+        veirification = serializer.validated_data.get('verification')
+        
+        if veirification.verify_type == "VIA_EMAIL":
+            user.email_verified = True
+            user.save()
+            return Response({
+                'message': 'Email verified!',
+                'email': user.email,
+                'status': status.HTTP_200_OK
+            })
+        elif veirification.verify_type == "VIA_PHONE":
+            user.phone_verified = True
+            user.save()
+            
+            return Response({
+                'message': 'Phone number verified!',
+                'phone': user.phone_number,
+                'status': status.HTTP_200_OK
+            })
+            
+        
+        
+        
+        
             
         
                     
