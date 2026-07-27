@@ -2,15 +2,17 @@
 -------------------------------------
 Activation Process - ✅
 Login - ✅
-Logout - 
+Logout - ✅
 Delete Account -
-Send Email verification - 
+Send Email verification - ✅
 Send Telegram Verification Code - 
-Profile Update - 
-Password Change -
-Password Reset -
+Profile Update - ✅
+Password Change - 
+Password Reset - 
 Verify Email -
 Verify Phone -
+
+5/11
 
 
 ### COURSES 
