@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 from .models import CustomUser, UserPreference
-from .utils import check_email_username_phone
+from .utils import check_email_username_phone, check_password
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
@@ -161,14 +161,7 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         if len(password) > 50:
             raise serializers.ValidationError("Password is too long!")
         
-        if not re.search(r'[A-Z]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one uppercase letter."})
-        if not re.search(r'[a-z]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
-        if not re.search(r'[0-9]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one digit."})
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one special character."})
+        check_password(password)
         
         return attrs
         
@@ -199,14 +192,7 @@ class LoginSerializer(serializers.Serializer):
         if len(password) > 50:
             raise serializers.ValidationError("Password is too long!")
         
-        if not re.search(r'[A-Z]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one uppercase letter."})
-        if not re.search(r'[a-z]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
-        if not re.search(r'[0-9]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one digit."})
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
-            raise serializers.ValidationError({"password": "Password must contain at least one special character."})
+        check_password(password)
         
         return password
     
@@ -309,6 +295,47 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+    
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    conf_password = serializers.CharField(write_only=True)
+    
+    def validate_new_password(self, password):
+        check_password(password)
+        return password        
+    
+    def validate(self, attrs):
+        old_password = attrs['old_password']
+        new_password = attrs['new_password']
+        conf_password = attrs['conf_password']
+        
+        
+        if new_password and conf_password:
+            if conf_password != new_password:
+                raise serializers.ValidationError("Confirm password does not match to new password!")
+            if new_password == old_password:
+                raise serializers.ValidationError("Old password and new password cannot be identical!")
+        else:
+            raise serializers.ValidationError("New password and confirm password fields are required!")
+        
+        user = self.context.get('user')
+        if not user.check_password(old_password):
+            raise serializers.ValidationError("Old password is incorrect!")
+        
+        return attrs
+    
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['new_password'])
+        instance.save()
+        return instance
+        
+        
+        
+        
+                
+        
         
     
     

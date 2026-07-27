@@ -11,7 +11,7 @@ from baseapp.emails import send_verification_code
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
-                          LogoutSerializer, UpdateProfileSerializer)
+                          LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer)
 
 
 
@@ -133,6 +133,20 @@ class UpdateProfileAPIView(APIView):
             'status': status.HTTP_200_OK,
             'data': serializer.data
         })
+        
+class PasswordChangeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = PasswordChangeSerializer(instance=request.user, data=request.data, context={'user':request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response({
+            'message': "Password changed!",
+            'status': status.HTTP_200_OK
+        })
+        
+
 
             
         

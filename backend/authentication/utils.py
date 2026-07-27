@@ -2,6 +2,7 @@ import random
 from django.core.exceptions import ValidationError
 from .models import CodeVerify
 import re
+from rest_framework import serializers
 
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
@@ -27,6 +28,18 @@ def check_email_username_phone(user_input):
         return 'VIA_USERNAME'
     
     return False
+
+
+def check_password(password):
+    if not re.search(r'[A-Z]', password):
+        raise serializers.ValidationError({"password": f"Password must contain at least one uppercase letter."})
+    if not re.search(r'[a-z]', password):
+        raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
+    if not re.search(r'[0-9]', password):
+        raise serializers.ValidationError({"password": "Password must contain at least one digit."})
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
+        raise serializers.ValidationError({"password": "Password must contain at least one special character."})
+    return True
 
     
         
