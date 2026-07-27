@@ -1,11 +1,13 @@
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 from .models import CustomUser
-from .utils import check_email_or_phone
+from .utils import check_email_username_phone
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
 from django.utils import timezone
 import re
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +26,7 @@ class EmailOrPhoneSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email_or_phone = attrs.get('email_or_phone')
-        auth_type = check_email_or_phone(email_or_phone)
+        auth_type = check_email_username_phone(email_or_phone)
 
         if auth_type == 'VIA_PHONE':
             user = CustomUser.objects.filter(phone_number=email_or_phone).first()
@@ -181,6 +183,53 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         instance.account_status = CustomUser.AccountStatus.ACTIVE
         instance.save()
         return instance
+        
+
+class LoginSerializer(serializers.Serializer):
+    email_username_phone = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    
+    def validate_password(self, password):
+        
+        if len(password) < 8:
+            raise serializers.ValidationError("Password is too short!")
+        if len(password) > 50:
+            raise serializers.ValidationError("Password is too long!")
+        
+        if not re.search(r'[A-Z]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one uppercase letter."})
+        if not re.search(r'[a-z]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
+        if not re.search(r'[0-9]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one digit."})
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one special character."})
+        
+        return password
+    
+    def validate(self, attrs):
+        email_username_phone = attrs['email_username_phone']
+        password = attrs['password']
+        login_type = check_email_username_phone(email_username_phone)
+        user = authenticate(request=self.context.get('request'), username=email_username_phone, password=password)
+        
+        if not user:
+            raise serializers.ValidationError("Given credentials are incorrect!")
+        
+        if not user.is_verified:
+            raise serializers.ValidationError("Account is not verified!")
+        
+        refresh = RefreshToken.for_user(user)
+        attrs['tokens'] = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
+        
+        attrs['user'] = user
+        return attrs
+        
+        
+        
         
         
         

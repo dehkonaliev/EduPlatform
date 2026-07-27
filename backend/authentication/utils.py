@@ -13,14 +13,17 @@ def generate_code(user, verify_type):
         
     return code
 
-def check_email_or_phone(user_input):
+def check_email_username_phone(user_input):
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     phone_pattern = r"^\d{9}$"
+    username_pattern = r"^(?=.{3,16}$)[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*$"
     
     if re.fullmatch(email_pattern, user_input):
         return 'VIA_EMAIL'
     elif re.fullmatch(phone_pattern, user_input):
         return 'VIA_PHONE'
+    elif re.fullmatch(username_pattern, user_input):
+        return 'VIA_USERNAME'
     
     return False
     

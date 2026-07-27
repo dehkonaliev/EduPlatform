@@ -5,10 +5,10 @@ from .models import CustomUser, CodeVerify
 from .utils import generate_code
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer)
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
+from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer)
 
 
 
@@ -75,7 +75,8 @@ class ActivateUserAPIView(APIView):
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
         if not user:
             raise ValidationError("User does not exists!")
-        
+        if user.account_status != CustomUser.AccountStatus.PENDING:
+            raise ValidationError("User Account already activated!")
         
         serializer = ActivateUserSerializer(instance=user, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -86,8 +87,20 @@ class ActivateUserAPIView(APIView):
             'status': status.HTTP_200_OK,
             'data': serializer.data
         })
+ 
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tokens = serializer.validated_data['tokens']
         
-        
+        return Response({
+            "message": "Logged In!",
+            "status": status.HTTP_200_OK,
+            'tokens': tokens
+        })
+
             
         
         
