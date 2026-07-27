@@ -8,7 +8,8 @@ from rest_framework import status
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
-from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer)
+from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
+                          LogoutSerializer)
 
 
 
@@ -100,6 +101,21 @@ class LoginAPIView(APIView):
             "status": status.HTTP_200_OK,
             'tokens': tokens
         })
+        
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid()
+        serializer.save()
+        
+        return Response({
+            'message': "Logged Out Successfully!",
+            'status': status.HTTP_205_RESET_CONTENT
+        })
+        
+
 
             
         

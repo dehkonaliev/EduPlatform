@@ -227,6 +227,25 @@ class LoginSerializer(serializers.Serializer):
         
         attrs['user'] = user
         return attrs
+    
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+    
+    def save(self, **kwargs):
+        try:
+            token = RefreshToken(self.token)
+            token.blacklist()
+            
+        except:
+            raise serializers.ValidationError("Invalid or expired token")
+        
+
+        
         
         
         

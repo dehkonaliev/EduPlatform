@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import (EmailOrPhoneAPIView, VerifyCodeAPIView, ActivateUserAPIView, LoginAPIView)
+from .views import (EmailOrPhoneAPIView, VerifyCodeAPIView, ActivateUserAPIView, LoginAPIView, LogoutAPIView)
 
 urlpatterns = [
     path('signup', EmailOrPhoneAPIView.as_view()),
     path('verification-code', VerifyCodeAPIView.as_view()),
     path('activation', ActivateUserAPIView.as_view()),
     path('login', LoginAPIView.as_view()),
+    path('logout', LogoutAPIView.as_view()),
 ]
