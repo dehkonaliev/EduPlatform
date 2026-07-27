@@ -9,8 +9,9 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from baseapp.emails import send_verification_code
 from django.db.models import Q
+from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
-                          LogoutSerializer)
+                          LogoutSerializer, UpdateProfileSerializer)
 
 
 
@@ -117,7 +118,21 @@ class LogoutAPIView(APIView):
             'status': status.HTTP_205_RESET_CONTENT
         })
         
-
+class UpdateProfileAPIView(APIView):
+    parser_classes = [FormParser, MultiPartParser]
+    permission_classes = [IsAuthenticated]
+    
+    def patch(self, request):
+        user = request.user
+        serializer = UpdateProfileSerializer(instance=user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response({
+            'message': "Profile Updated!",
+            'status': status.HTTP_200_OK,
+            'data': serializer.data
+        })
 
             
         

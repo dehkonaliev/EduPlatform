@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import CustomUser
+from .models import CustomUser, UserPreference
 from .utils import check_email_username_phone
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
 from django.utils import timezone
 import re
+from baseapp.emails import send_verification_code
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -178,6 +179,8 @@ class ActivateUserSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+            
+        UserPreference.objects.create(user=instance)
 
         instance.set_password(password)
         instance.account_status = CustomUser.AccountStatus.ACTIVE
@@ -245,6 +248,70 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid or expired token")
         
 
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'username', 'photo']
+        read_only_fields = ['id']
+        
+    NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
+    
+    def validate_first_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("First name cannot be blank.")
+        if len(value) < 2:
+            raise serializers.ValidationError("First name must be at least 2 characters.")
+        if len(value) > 50:
+            raise serializers.ValidationError("First name is too long.")
+        if not self.NAME_REGEX.match(value):
+            raise serializers.ValidationError("First name may only contain letters, spaces, hyphens, and apostrophes.")
+        return value.title()
+
+    def validate_last_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Last name cannot be blank.")
+        if len(value) < 2:
+            raise serializers.ValidationError("Last name must be at least 2 characters.")
+        if len(value) > 50:
+            raise serializers.ValidationError("Last name is too long.")
+        if not self.NAME_REGEX.match(value):
+            raise serializers.ValidationError("Last name may only contain letters, spaces, hyphens, and apostrophes.")
+        return value.title()
+    
+    def validate_username(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Username cannot be blank.")
+        if len(value) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters.")
+        if len(value) > 50:
+            raise serializers.ValidationError("Username is too long.")
+        if not re.fullmatch(r'^[A-Za-z0-9_]+$', value):
+            raise serializers.ValidationError("Username may only contain letters, numbers, and underscores.")
+        if value[0].isdigit():
+            raise serializers.ValidationError("Username cannot start with a number.")
+        if CustomUser.objects.filter(username=value).exists():
+            raise serializers.ValidationError("A user with this username already exists!")
+        return value
+    
+    def validate_photo(self, value):
+        max_size_mb = 5
+        if value.size > max_size_mb * 1024 * 1024:
+            raise serializers.ValidationError(f"Image must be under {max_size_mb}MB.")
+
+        allowed_types = ['image/jpeg', 'image/png', 'image/webp']
+        if value.content_type not in allowed_types:
+            raise serializers.ValidationError("Only JPEG, PNG, or WEBP images are allowed.")
+
+        return value
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+        
+    
+    
         
         
         
