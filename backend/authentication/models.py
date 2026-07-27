@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from baseapp.models import BaseModel
 import uuid
-from .manager import CustomUserManager
 from datetime import timedelta
 from django.utils import timezone
 from core import settings
@@ -43,21 +42,16 @@ class CustomUser(AbstractUser, BaseModel):
     
     photo = models.ImageField(upload_to='users/', blank=True, null=True)
     
-    #To avoid default required username field problem!
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
-    objects = CustomUserManager()
     
     @property
     def is_verified(self):
         return self.email_verified or self.phone_verified
     
-    def save(self, *args, **kwargs):
-        if not self.username:
-            self.username = f"user_{uuid.uuid4().hex[:12]}"
-            
-        if not self.pk:
+    def save(self, *args, **kwargs):            
+        if not self.pk and not self.password:
             self.set_unusable_password()
         super().save(*args, **kwargs)
         
@@ -76,8 +70,11 @@ class CodeVerify(BaseModel):
     def __str__(self):
         return f"{self.user.username} code: {self.code}"
     
+    class Meta:
+        ordering = ['expire_time']
+    
     def save(self, *args, **kwargs):
-        if not self.pk: # Changes the expire time only once
+        if not self.expire_time:
             expire_min = (
                 settings.EMAIL_EXPIRATION_TIME
                 if self.verify_type == self.VerifyType.VIA_EMAIL

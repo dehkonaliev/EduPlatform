@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import CustomUser
 from .utils import check_email_or_phone
 from rest_framework.exceptions import ValidationError
+import uuid
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,19 +42,34 @@ class EmailOrPhoneSerializer(serializers.Serializer):
         user = validated_data['existing_user']
         auth_type = validated_data['auth_type']
         email_or_phone = validated_data['email_or_phone']
+        username = f"user_{uuid.uuid4().hex[:12]}"
 
         if user:
             return user
 
-        data = {'auth_type': auth_type}
+        data = {'auth_type': auth_type, 'username': username}
+        
         if auth_type == 'VIA_PHONE':
             data['phone_number'] = email_or_phone
+            data['email'] = f"useremail_{uuid.uuid4().hex[:10]}@gmail.com"
         else:
             data['email'] = email_or_phone
 
         user = CustomUser.objects.create_user(**data)
         return user
-            
+    
+
+class VerifyCodeSerializer(serializers.Serializer):
+    verification_code = serializers.CharField()
+    
+    def validate(self, attrs):
+        code = attrs.get('verification_code')
+        if not code.isdigit() and len(code) != 6:
+            raise ValidationError("The verification code is incorrect!")
+        
+        return attrs
+        
+         
             
     
 
