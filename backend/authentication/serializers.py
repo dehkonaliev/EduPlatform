@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate, password_validation
 from .models import CustomUser, UserPreference
-from .utils import check_email_username_phone, check_password
+from .utils import check_email_username_phone, check_password, check_code
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
@@ -81,11 +81,7 @@ class VerifyCodeSerializer(serializers.Serializer):
         if not user:
             raise ValidationError("User Not Found!")
         
-        verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
-        if not verification:
-            raise ValidationError("Invalid code!")
-        elif verification.expire_time < timezone.now():
-            raise ValidationError("Code expired!")
+        verification = check_code(user, code)
         
         
         attrs['verification'] = verification
@@ -331,7 +327,47 @@ class PasswordChangeSerializer(serializers.Serializer):
         instance.save()
         return instance
         
+
+class VerifyEmailSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    
+    def validate(self, attrs):
+        email = attrs['email']
+        user = self.context.get('user')
+        if not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            raise ValidationError("Email is invalid!")
         
+        base_user = CustomUser.objects.filter(email=email).first()
+        if base_user and base_user != user:
+            raise ValidationError("User with this email is already exists!")
+        
+        return attrs
+    
+    def update(self, instance, validated_data):
+        instance.email = validated_data['email']
+        instance.save()
+        return instance
+    
+    
+class VerifyPhoneSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+    
+    def validate(self, attrs):
+        phone_number = attrs['phone_number']
+        user = self.context.get('user')
+        if not re.fullmatch(r"^\d{9}$", phone_number):
+            raise ValidationError("Phone number is invalid!")
+        
+        base_user = CustomUser.objects.filter(phone_number=phone_number).first()
+        if base_user and base_user != user:
+            raise ValidationError("User with this phone number is already exists!")
+        
+        return attrs
+    
+    def update(self, instance, validated_data):
+        instance.phone_number = validated_data['phone_number']
+        instance.save()
+        return instance
         
         
                 

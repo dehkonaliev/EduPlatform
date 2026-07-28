@@ -1,17 +1,15 @@
 import random
-from django.core.exceptions import ValidationError
 from .models import CodeVerify
 import re
 from rest_framework import serializers
+from django.utils import timezone
 
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
     if verify_type=='VIA_EMAIL':
         CodeVerify.objects.create(user=user, code=code, verify_type=verify_type)
-        # email_sender
     elif verify_type=='VIA_PHONE':
         CodeVerify.objects.create(user=user, code=code, verify_type=verify_type)
-        # telegram_bot
         
     return code
 
@@ -29,7 +27,6 @@ def check_email_username_phone(user_input):
     
     return False
 
-
 def check_password(password):
     if not re.search(r'[A-Z]', password):
         raise serializers.ValidationError({"password": f"Password must contain at least one uppercase letter."})
@@ -41,6 +38,20 @@ def check_password(password):
         raise serializers.ValidationError({"password": "Password must contain at least one special character."})
     return True
 
+def check_code(user, code):
+    verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
+    if not verification:
+        raise serializers.ValidationError("Invalid code!")
+    elif verification.expire_time < timezone.now():
+        raise serializers.ValidationError("Code expired!")
     
+    return verification
+
+def is_expired_code(user):
+    last_code = user.codes.order_by('-expire_time').first()
+    if last_code and last_code.expire_time > timezone.now():
+        raise serializers.ValidationError("Please wait until your current code expires before requesting a new one.")
+    
+    return last_code
         
     

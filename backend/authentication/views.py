@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import CustomUser, CodeVerify
-from .utils import generate_code
+from .utils import generate_code, check_code, is_expired_code
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
@@ -11,8 +11,10 @@ from baseapp.emails import send_verification_code
 from django.db.models import Q
 from baseapp.emails import send_verification_code
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
-                          LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer)
+from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
+    LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
+    VerifyEmailSerializer, VerifyPhoneSerializer
+)
 
 
 
@@ -25,12 +27,10 @@ class EmailOrPhoneAPIView(APIView):
         user = serializer.save()
         
         auth_type = serializer.validated_data.get('auth_type')
-        last_code = user.codes.order_by('-expire_time').first()
         
-        if last_code and last_code.expire_time > timezone.now():
-            raise ValidationError("Please wait until your current code expires before requesting a new one.")
-        
+        is_expired_code(user)
         code = generate_code(user, auth_type)
+        
         if auth_type == 'VIA_EMAIL':
             send_verification_code(user.email, code)
             return Response({
@@ -156,8 +156,11 @@ class DeleteAccountAPIView(APIView):
         if veirfy_type == "VIA_EMAIL":
             if not user.email_verified:
                 raise ValidationError("You cannot delete your account via email. Your email is not verified!")
+            
+            is_expired_code(user)
             code = generate_code(user, veirfy_type)
             send_verification_code(user.email, code)
+            
             return Response({
                 "message": "We have sent a verification code to your email!",
                 'status': status.HTTP_200_OK,
@@ -166,7 +169,10 @@ class DeleteAccountAPIView(APIView):
         elif veirfy_type == "VIA_PHONE":
             if not user.email_verified:
                 raise ValidationError("You cannot delete your account via phone. Your phone number is not verified!")
+            
+            is_expired_code(user)
             code = generate_code(user, veirfy_type)
+            
             return Response({
                 "message": "You can get your verification code via telegram bot by sharing your phone number!",
                 'status': status.HTTP_200_OK,
@@ -192,10 +198,76 @@ class DeleteAccountAPIView(APIView):
             'status': status.HTTP_200_OK,
             'account_status': user.account_status
         })
+
+class VerifyEmailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        serializer = VerifyEmailSerializer(instance=user, data=request.data, context={"user":user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        new_email = serializer.validated_data.get('email')
         
-                
-                
+        is_expired_code(user)
+        code = generate_code(user, "VIA_EMAIL")
+        send_verification_code(new_email, code)
+        return Response({
+            'msg': "We have sent a verification code to your email!",
+            "status": status.HTTP_200_OK,
+            "verifying": "email"
+        })
         
+    def post(self, request):
+        user = request.user
+        code = request.data.get('code')
+        if len(code) > 6 and not code.isdigit():
+            raise ValidationError("Invalid code!")
+        
+        verification = check_code(user, code)
+        
+        user.email_verified = True
+        user.save()
+        
+        return Response({
+            'message': "Your email verified!",
+            'status': status.HTTP_200_OK
+        })
+        
+
+class VerifyPhoneAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        serializer = VerifyPhoneSerializer(instance=user, data=request.data, context={"user":user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        new_phone = serializer.validated_data.get('phone_number')
+        
+        is_expired_code(user)
+        code = generate_code(user, "VIA_PHONE")
+        return Response({
+            'msg': "You can get your code via our telegram bot!",
+            "status": status.HTTP_200_OK,
+            "verifying": "phone"
+        })
+        
+    def post(self, request):
+        user = request.user
+        code = request.data.get('code')
+        if len(code) > 6 and not code.isdigit():
+            raise ValidationError("Invalid code!")
+        
+        verification = check_code(user, code)
+        
+        user.phone_verified = True
+        user.save()
+        
+        return Response({
+            'message': "Your phone number verified!",
+            'status': status.HTTP_200_OK
+        })
 
 
             
