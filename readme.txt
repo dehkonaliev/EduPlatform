@@ -9,10 +9,11 @@ Send Telegram Verification Code - ✅
 Profile Update - ✅
 Password Change - ✅
 Password Reset - 
-Verify Email - 
-Verify Phone - 
+Verify Email - ✅
+Verify Phone - ✅
+Overall integrity - 
 
-8/11
+10/12
 
 
 ### COURSES 
