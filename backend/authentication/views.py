@@ -13,7 +13,7 @@ from baseapp.emails import send_verification_code
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
-    VerifyEmailSerializer, VerifyPhoneSerializer
+    VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer
 )
 
 
@@ -234,7 +234,6 @@ class VerifyEmailAPIView(APIView):
             'status': status.HTTP_200_OK
         })
         
-
 class VerifyPhoneAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -269,8 +268,21 @@ class VerifyPhoneAPIView(APIView):
             'status': status.HTTP_200_OK
         })
 
-
+class PasswordResetRequestAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        verify_type = serializer.validated_data['verify_type']
+        if verify_type == 'VIA_EMAIL':
+            return Response({
+                'message': "We have sent reset password link to your email!",
+                'email': serializer.validated_data['email_or_phone'],
+                'status': status.HTTP_200_OK
+            })
             
+        
         
         
         

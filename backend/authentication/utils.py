@@ -3,6 +3,7 @@ from .models import CodeVerify
 import re
 from rest_framework import serializers
 from django.utils import timezone
+from baseapp.models import MyToken
 
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
@@ -54,4 +55,11 @@ def is_expired_code(user):
     
     return last_code
         
-    
+def generate_mytoken(user, token_for):
+    latest_token = user.my_tokens.order_by('-created_at').first()
+
+    if latest_token and latest_token.is_valid():
+        raise serializers.ValidationError("Please wait until your old access link expires!")
+
+    token = MyToken.objects.create(user=user, token_for=token_for)
+    return token

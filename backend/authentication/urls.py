@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (EmailOrPhoneAPIView, VerifyCodeAPIView, ActivateUserAPIView, LoginAPIView, LogoutAPIView,
     UpdateProfileAPIView, PasswordChangeAPIView, DeleteAccountAPIView, VerifyEmailAPIView,
-    VerifyPhoneAPIView
+    VerifyPhoneAPIView, PasswordResetRequestAPIView
 )
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('delete-account', DeleteAccountAPIView.as_view()),
     path('veirfy-email', VerifyEmailAPIView.as_view()),
     path('veirfy-phone', VerifyPhoneAPIView.as_view()),
+    path('password-reset-request', PasswordResetRequestAPIView.as_view()),
 ]

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate, password_validation
 from .models import CustomUser, UserPreference
-from .utils import check_email_username_phone, check_password, check_code
+from .utils import check_email_username_phone, check_password, check_code, generate_mytoken
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
@@ -369,7 +369,37 @@ class VerifyPhoneSerializer(serializers.Serializer):
         instance.save()
         return instance
         
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email_or_phone = serializers.CharField()
+    
+    def validate(self, attrs):
+        email_or_phone = attrs['email_or_phone']
+        verify_type = check_email_username_phone(email_or_phone)
         
+        if verify_type == "VIA_EMAIL":
+            user = CustomUser.objects.filter(email=email_or_phone).first()
+            if not user:
+                raise serializers.ValidationError("User not found!")
+            if user and user.email_verified == False:
+                raise serializers.ValidationError("Email was not verified try with phone number!")
+            
+            my_token = generate_mytoken(user, "RESET_PASSWORD")
+            reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
+        
+        attrs['verify_type'] = verify_type
+        return attrs
+    
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    conf_password = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        pass
+            
+            
+    
+       
                 
         
         
