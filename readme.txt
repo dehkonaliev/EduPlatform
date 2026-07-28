@@ -8,12 +8,14 @@ Send Email verification -             ✅
 Send Telegram Verification Code -     ✅
 Profile Update -                      ✅
 Password Change -                     ✅
-Password Reset -                      ❌
+Password Reset -                      ✅
 Verify Email -                        ✅
 Verify Phone -                        ✅
 Overall integrity -                   ❌
+EMAIL Changing Process  Safety -      ❌
+ACTIVATION safety -                   ❌
 
-10/12
+11/14
 
 
 ### COURSES 
