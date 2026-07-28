@@ -11,9 +11,9 @@ Password Change -                     ✅
 Password Reset -                      ✅
 Verify Email -                        ✅
 Verify Phone -                        ✅
+EMAIL Changing Process Safety -       ❌
+ACTIVATION safety -                   ✅
 Overall integrity -                   ❌
-EMAIL Changing Process  Safety -      ❌
-ACTIVATION safety -                   ❌
 
 11/14
 

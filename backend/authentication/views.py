@@ -71,21 +71,16 @@ class VerifyCodeAPIView(APIView):
             return Response({
                 'message': 'Phone number verified!',
                 'phone': user.phone_number,
-                'status': status.HTTP_200_OK
+                'status': status.HTTP_200_OK,
+                "token": serializer.validated_data['token']
             })
             
 class ActivateUserAPIView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        email_or_phone = request.data.get('email_or_phone')
-        user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
-        if not user:
-            raise ValidationError("User does not exists!")
-        if user.account_status != CustomUser.AccountStatus.PENDING:
-            raise ValidationError("User Account already activated!")
         
-        serializer = ActivateUserSerializer(instance=user, data=request.data)
+        serializer = ActivateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         

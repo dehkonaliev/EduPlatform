@@ -84,6 +84,7 @@ class VerifyCodeSerializer(serializers.Serializer):
         
         verification = check_code(user, code)
         
+        token = generate_mytoken(user, 'ACTIVATION')
         
         attrs['verification'] = verification
         attrs['user'] = user
@@ -94,6 +95,7 @@ class ActivateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     conf_password = serializers.CharField(write_only=True)
     email_or_phone = serializers.CharField(write_only=True)
+    token = serializers.CharField()
     user_role = serializers.ChoiceField(
         choices=[
             (CustomUser.UserRole.STUDENT, 'student'),
@@ -102,8 +104,18 @@ class ActivateUserSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = CustomUser
-        fields = ['id', 'email_or_phone', 'first_name', 'last_name', 'username', 'user_role', 'password', 'conf_password']
+        fields = ['id', 'email_or_phone', 'token', 'first_name', 'last_name', 'username', 'user_role', 'password', 'conf_password']
         read_only_fields = ['id']
+        
+        
+    def validate_token(self, token):
+        token_obj = MyToken.objects.filter(token=token, is_used=False).first()
+        if not token_obj:
+            raise serializers.ValidationError("Invalid token!")
+        elif not token_obj.is_valid():
+            raise serializers.ValidationError("Token Expired!")
+        
+        return token
         
     NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
 
@@ -151,6 +163,13 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         password = attrs['password']
         conf_password = attrs['conf_password']
         
+        token = attrs['token']
+        token_obj = MyToken.objects.filter(token=token, is_used=False).first()
+        email_or_phone = attrs['email_or_phone']
+        user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
+        
+        if token_obj.user != user:
+            raise serializers.ValidationError("User and token data do not match!")
         if password != conf_password:
             raise serializers.ValidationError("Confirm password doesn't match.")
         if len(password) < 8:
@@ -159,23 +178,19 @@ class ActivateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password is too long!")
         
         check_password(password)
-        
+        attrs['user'] = user
         return attrs
+    
+    def save(self):
+        user = self.validated_data['user']
+        user.password = self.validated_data['password']
+        user.set_password(self.validated_data['password'])
+        user.account_status = CustomUser.AccountStatus.ACTIVE
+        user.save()
         
-    def update(self, instance, validated_data):
-        validated_data.pop('email_or_phone', None)
-        password = validated_data.pop('password')
-        validated_data.pop('conf_password', None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-            
-        UserPreference.objects.create(user=instance)
-
-        instance.set_password(password)
-        instance.account_status = CustomUser.AccountStatus.ACTIVE
-        instance.save()
-        return instance
+        UserPreference.objects.create(user=user)
+        
+        return user
         
 
 class LoginSerializer(serializers.Serializer):
