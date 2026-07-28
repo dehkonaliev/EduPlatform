@@ -9,6 +9,7 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from baseapp.emails import send_verification_code
 from django.db.models import Q
+from baseapp.emails import send_verification_code
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer, LoginSerializer,
                           LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer)
@@ -52,7 +53,8 @@ class VerifyCodeAPIView(APIView):
         
         user = serializer.validated_data.get('user')
         veirification = serializer.validated_data.get('verification')
-        
+        veirification.is_used = True
+        veirification.save()
         if veirification.verify_type == "VIA_EMAIL":
             user.email_verified = True
             user.save()
@@ -145,6 +147,54 @@ class PasswordChangeAPIView(APIView):
             'message': "Password changed!",
             'status': status.HTTP_200_OK
         })
+        
+class DeleteAccountAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        veirfy_type = request.data.get('verify_type')
+        if veirfy_type == "VIA_EMAIL":
+            if not user.email_verified:
+                raise ValidationError("You cannot delete your account via email. Your email is not verified!")
+            code = generate_code(user, veirfy_type)
+            send_verification_code(user.email, code)
+            return Response({
+                "message": "We have sent a verification code to your email!",
+                'status': status.HTTP_200_OK,
+                "veirfy_type": "VIA_EMAIL"
+            })
+        elif veirfy_type == "VIA_PHONE":
+            if not user.email_verified:
+                raise ValidationError("You cannot delete your account via phone. Your phone number is not verified!")
+            code = generate_code(user, veirfy_type)
+            return Response({
+                "message": "You can get your verification code via telegram bot by sharing your phone number!",
+                'status': status.HTTP_200_OK,
+                "veirfy_type": "VIA_PHONE"
+            })
+        else:
+            raise ValidationError("None type verify type!")
+    
+    def post(self, request):
+        user = request.user
+        code = request.data.get('verification_code')
+        code = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
+        if not code:
+            raise ValidationError("Invalid code!")
+        elif code.expire_time < timezone.now():
+            raise ValidationError("Verification code expired!")
+        
+        user.account_status = CustomUser.AccountStatus.DELETED
+        user.save()
+        
+        return Response({
+            'msg': "Account set deleted!",
+            'status': status.HTTP_200_OK,
+            'account_status': user.account_status
+        })
+        
+                
+                
         
 
 
