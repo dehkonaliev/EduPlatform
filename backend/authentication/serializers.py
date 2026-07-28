@@ -5,6 +5,7 @@ from .utils import check_email_username_phone, check_password, check_code, gener
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
+from baseapp.models import MyToken
 from django.utils import timezone
 import re
 from baseapp.emails import send_verification_code
@@ -391,11 +392,39 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return attrs
     
 class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
     new_password = serializers.CharField(write_only=True)
     conf_password = serializers.CharField(write_only=True)
     
     def validate(self, attrs):
-        pass
+        token = attrs['token']
+        new_password = attrs['new_password']
+        conf_password = attrs['conf_password']
+        
+        check_password(new_password)
+        if new_password != conf_password:
+            raise serializers.ValidationError("Confirm password does not match!")
+        token_obj = MyToken.objects.filter(token=token, is_used=False).first()
+        if not token_obj:
+            raise serializers.ValidationError("Invalid token!")
+        if not token_obj.is_valid():
+            raise serializers.ValidationError("Token expired!")
+        user = token_obj.user
+        attrs['user'] = user
+        attrs['token_obj'] = token_obj
+        return attrs
+    
+    def save(self):
+        user = self.validated_data['user']
+        token_obj = self.validated_data['token_obj']
+
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+
+        token_obj.is_used = True
+        token_obj.save()
+
+        return user
             
             
     

@@ -13,7 +13,8 @@ from baseapp.emails import send_verification_code
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
-    VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer
+    VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+    
 )
 
 
@@ -281,6 +282,20 @@ class PasswordResetRequestAPIView(APIView):
                 'email': serializer.validated_data['email_or_phone'],
                 'status': status.HTTP_200_OK
             })
+
+
+class PasswordResetConfirmAPIView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response({
+            'message': "Password Changed!",
+            'status': status.HTTP_200_OK
+        })
             
         
         
