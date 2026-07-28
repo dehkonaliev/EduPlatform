@@ -277,7 +277,12 @@ class PasswordResetRequestAPIView(APIView):
                 'email': serializer.validated_data['email_or_phone'],
                 'status': status.HTTP_200_OK
             })
-
+        if verify_type == 'VIA_PHONE':
+            return Response({
+                'message': "You can take your access link via telegram bot!",
+                'email': serializer.validated_data['email_or_phone'],
+                'status': status.HTTP_200_OK
+            })
 
 class PasswordResetConfirmAPIView(APIView):
     permission_classes = [AllowAny]

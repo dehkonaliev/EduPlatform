@@ -50,8 +50,9 @@ def check_code(user, code):
 
 def is_expired_code(user):
     last_code = user.codes.order_by('-expire_time').first()
-    if last_code and last_code.expire_time > timezone.now():
-        raise serializers.ValidationError("Please wait until your current code expires before requesting a new one.")
+    if last_code:
+        if last_code.expire_time > timezone.now():
+            raise serializers.ValidationError("Please wait until your current code expires before requesting a new one.")
     
     return last_code
         

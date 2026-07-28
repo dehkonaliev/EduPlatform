@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate, password_validation
 from .models import CustomUser, UserPreference
-from .utils import check_email_username_phone, check_password, check_code, generate_mytoken
+from .utils import check_email_username_phone, check_password, check_code, generate_mytoken, is_expired_code
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
@@ -36,23 +36,35 @@ class EmailOrPhoneSerializer(serializers.Serializer):
             user = CustomUser.objects.filter(email=email_or_phone).first()
         else:
             raise ValidationError("Email or phone number is not valid!")
-
-        if user and user.account_status != CustomUser.AccountStatus.PENDING:
-            field = 'phone number' if auth_type == 'VIA_PHONE' else 'email address'
-            raise ValidationError(f"User with this {field} already exists!")
-
+        
+        
+        if user:
+            is_expired_code(user)
+            if auth_type == "VIA_EMAIL":
+                if user.account_status == CustomUser.AccountStatus.PENDING:
+                    user.delete()
+                elif user.email_verified == False:
+                    user.email = f"tempemail_{uuid.uuid4().hex[:12]}@gmail.com"
+                    user.save()
+                elif user.account_status != CustomUser.AccountStatus.PENDING:
+                    raise ValidationError(f"User with this email already exists!")
+            if auth_type == "VIA_PHONE":
+                if user.account_status == CustomUser.AccountStatus.PENDING:
+                    user.delete()
+                elif user.phone_verified == False:
+                    user.phone_number = ""
+                    user.save()
+                elif user.account_status != CustomUser.AccountStatus.PENDING:
+                    raise ValidationError(f"User with this phone number already exists!")
+            
         attrs['auth_type'] = auth_type
         attrs['existing_user'] = user
         return attrs
 
     def create(self, validated_data):
-        user = validated_data['existing_user']
         auth_type = validated_data['auth_type']
         email_or_phone = validated_data['email_or_phone']
         username = f"user_{uuid.uuid4().hex[:12]}"
-
-        if user:
-            return user
 
         data = {'auth_type': auth_type, 'username': username}
         
@@ -352,15 +364,20 @@ class VerifyEmailSerializer(serializers.Serializer):
         user = self.context.get('user')
         if not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
             raise ValidationError("Email is invalid!")
-        
         base_user = CustomUser.objects.filter(email=email).first()
+        
         if base_user and base_user != user:
             raise ValidationError("User with this email is already exists!")
         
+        if base_user.email_verified == False and base_user != user:
+            base_user.email = f"temp_{uuid.uuid4().hex[:12]}@gmail.com"
+        
+        attrs['base_user'] = base_user
         return attrs
     
     def update(self, instance, validated_data):
         instance.email = validated_data['email']
+        
         instance.save()
         return instance
     
@@ -402,6 +419,16 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             
             my_token = generate_mytoken(user, "RESET_PASSWORD")
             reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
+            
+        elif verify_type == "VIA_PHONE":
+                    user = CustomUser.objects.filter(phone_number=email_or_phone).first()
+                    if not user:
+                        raise serializers.ValidationError("User not found!")
+                    if user and user.email_verified == False:
+                        raise serializers.ValidationError("Phone number was not verified try with email!")
+                    
+                    my_token = generate_mytoken(user, "RESET_PASSWORD")
+                    reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
         
         attrs['verify_type'] = verify_type
         return attrs
