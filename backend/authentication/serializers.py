@@ -312,9 +312,8 @@ class VerifyPhoneSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         phone_number = attrs['phone_number']
-        user = self.context.get('user')
         if not re.fullmatch(r"^\d{9}$", phone_number):
-            raise ValidationError("Phone number is invalid!")
+            return field_error("phone_number","Phone number is invalid!")
         
         base_user = CustomUser.objects.filter(phone_number=phone_number).first()
         if base_user:
@@ -337,9 +336,9 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         if verify_type == "VIA_EMAIL":
             user = CustomUser.objects.filter(email=email_or_phone).first()
             if not user:
-                raise serializers.ValidationError("User not found!")
+                return field_error("email_or_phone", "User not found!")
             if user and user.email_verified == False:
-                raise serializers.ValidationError("Email was not verified try with phone number!")
+                return field_error("email_or_phone", "Email was not verified try with phone number!")
             
             my_token = generate_mytoken(user, "RESET_PASSWORD")
             reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
@@ -347,9 +346,9 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         elif verify_type == "VIA_PHONE":
                     user = CustomUser.objects.filter(phone_number=email_or_phone).first()
                     if not user:
-                        raise serializers.ValidationError("User not found!")
+                        return field_error("email_or_phone", "User not found!")
                     if user and user.email_verified == False:
-                        raise serializers.ValidationError("Phone number was not verified try with email!")
+                        return field_error("phone_number","Phone number was not verified try with email!")
                     
                     my_token = generate_mytoken(user, "RESET_PASSWORD")
                     reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
@@ -369,12 +368,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         
         password_validator(new_password)
         if new_password != conf_password:
-            raise serializers.ValidationError("Confirm password does not match!")
+            return field_error("conf_password", "Confirm password does not match!")
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         if not token_obj:
-            raise serializers.ValidationError("Invalid token!")
+            return error_response(message="Invalid token!")
         if not token_obj.is_valid():
-            raise serializers.ValidationError("Token expired!")
+            return field_error("token","Token expired!")
         user = token_obj.user
         attrs['user'] = user
         attrs['token_obj'] = token_obj
@@ -393,8 +392,6 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return user
     
     
-class TokenRefreshSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
     
             
             
