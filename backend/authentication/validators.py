@@ -6,7 +6,7 @@ from .models import CustomUser
 def name_validator(name, type):
     NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
     
-    value = value.strip()
+    value = name.strip()
     if not value:
         raise serializers.ValidationError(f"{type} cannot be blank.")
     if len(value) < 2:

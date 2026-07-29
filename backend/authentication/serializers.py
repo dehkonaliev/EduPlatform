@@ -4,6 +4,7 @@ from .models import CustomUser, UserPreference
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
+from profiles.models import StudentProfile, InstructorProfile
 from baseapp.models import MyToken
 from django.utils import timezone
 import re
@@ -149,6 +150,10 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         user = self.validated_data['user']
         user.password = self.validated_data['password']
         user.set_password(self.validated_data['password'])
+        if self.validated_data['user_role'] == CustomUser.UserRole.STUDENT:
+            StudentProfile.objects.create(user=user)
+        elif self.validated_data['user_role'] == CustomUser.UserRole.INSTRUCTOR:
+            InstructorProfile.objects.create(user=user)
         user.account_status = CustomUser.AccountStatus.ACTIVE
         user.save()
         
