@@ -1,13 +1,13 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate, password_validation
+from django.contrib.auth import authenticate
 from .models import CustomUser, UserPreference
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
 from profiles.models import StudentProfile, InstructorProfile
-from baseapp.models import MyToken
-from django.utils import timezone
 import re
+from baseapp.models import MyToken
+from baseapp.utils import field_error, success_response, error_response
 from baseapp.emails import send_verification_code
 from rest_framework_simplejwt.tokens import RefreshToken
 from .validators import name_validator, username_validator, password_validator
@@ -39,7 +39,7 @@ class EmailOrPhoneSerializer(serializers.Serializer):
         elif auth_type == 'VIA_EMAIL':
             user = CustomUser.objects.filter(email=email_or_phone).first()
         else:
-            raise ValidationError("Email or phone number is not valid!")
+            return field_error("email_or_phone", "Email or phone number is not valid!")
         
         
         if user:
@@ -74,12 +74,12 @@ class VerifyCodeSerializer(serializers.Serializer):
         email_or_phone = attrs['email_or_phone']
         
         if not code.isdigit() and len(code) != 6:
-            raise ValidationError("The verification code is incorrect!")
+            return field_error("verification_code","The verification code is incorrect!")
         
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
         
         if not user:
-            raise ValidationError("User Not Found!")
+            return error_response(message="User not found", status_code=404)
         
         verification = check_code(user, code)
         
@@ -109,9 +109,9 @@ class ActivateUserSerializer(serializers.ModelSerializer):
     def validate_token(self, token):
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         if not token_obj:
-            raise serializers.ValidationError("Invalid token!")
+            return field_error("token", "Invalid token!")
         elif not token_obj.is_valid():
-            raise serializers.ValidationError("Token Expired!")
+            return error_response(message="Token Expired!")
         
         return token
         
@@ -127,25 +127,33 @@ class ActivateUserSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         password = attrs['password']
         conf_password = attrs['conf_password']
-        
         token = attrs['token']
-        token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         email_or_phone = attrs['email_or_phone']
+
+        token_obj = MyToken.objects.filter(token=token, is_used=False).first()
+        if not token_obj:
+            raise serializers.ValidationError({"token": "Invalid or expired token"})
+
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
-        
+        if not user:
+            raise serializers.ValidationError({"email_or_phone": "No account found with this email or phone"})
+
         if token_obj.user != user:
-            raise serializers.ValidationError("User and token data do not match!")
+            raise serializers.ValidationError({"token": "Invalid token"})
+
         if password != conf_password:
-            raise serializers.ValidationError("Confirm password doesn't match.")
+            raise serializers.ValidationError({"conf_password": "Passwords do not match"})
+
         if len(password) < 8:
-            raise serializers.ValidationError("Password is too short!")
+            raise serializers.ValidationError({"password": "Password is too short"})
+
         if len(password) > 50:
-            raise serializers.ValidationError("Password is too long!")
-        
+            raise serializers.ValidationError({"password": "Password is too long"})
         password_validator(password)
+
         attrs['user'] = user
         return attrs
-    
+        
     def save(self):
         user = self.validated_data['user']
         user.password = self.validated_data['password']
@@ -168,7 +176,7 @@ class LoginSerializer(serializers.Serializer):
     def validate_password(self, password):
         
         if len(password) < 8:
-            raise serializers.ValidationError("Password is too short!")
+            raise serializers.ValidationError({"password":"Password is too short!"})
         if len(password) > 50:
             raise serializers.ValidationError("Password is too long!")
         
@@ -260,15 +268,15 @@ class PasswordChangeSerializer(serializers.Serializer):
         
         if new_password and conf_password:
             if conf_password != new_password:
-                raise serializers.ValidationError("Confirm password does not match to new password!")
+                raise serializers.ValidationError({"conf_password": "Confirm password does not match to new password!"})
             if new_password == old_password:
-                raise serializers.ValidationError("Old password and new password cannot be identical!")
+                raise serializers.ValidationError({"new_password":"Old password and new password cannot be identical!"})
         else:
-            raise serializers.ValidationError("New password and confirm password fields are required!")
+            raise serializers.ValidationError({"new_password":"New password and confirm password fields are required!"})
         
         user = self.context.get('user')
         if not user.check_password(old_password):
-            raise serializers.ValidationError("Old password is incorrect!")
+            raise serializers.ValidationError({"old_password":"Old password is incorrect!"})
         
         return attrs
     
@@ -284,7 +292,7 @@ class VerifyEmailSerializer(serializers.Serializer):
         email = attrs['email']
         user = self.context.get('user')
         if not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
-            raise ValidationError("Email is invalid!")
+            raise ValidationError({"email":"Email is invalid!"})
         base_user = CustomUser.objects.filter(email=email).first()
         
         if base_user:
