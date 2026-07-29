@@ -29,7 +29,6 @@ class EmailOrPhoneAPIView(APIView):
         
         auth_type = serializer.validated_data.get('auth_type')
         
-        is_expired_code(user)
         code = generate_code(user, auth_type)
         
         if auth_type == 'VIA_EMAIL':

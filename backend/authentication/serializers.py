@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate, password_validation
 from .models import CustomUser, UserPreference
-from .utils import check_email_username_phone, check_password, check_code, generate_mytoken, is_expired_code
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
@@ -10,6 +9,10 @@ from django.utils import timezone
 import re
 from baseapp.emails import send_verification_code
 from rest_framework_simplejwt.tokens import RefreshToken
+from .utils import (check_email_username_phone, check_password, check_code, generate_mytoken, is_expired_code,
+    base_updater,
+)
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,7 +24,6 @@ class UserSerializer(serializers.ModelSerializer):
             'email_verified', 'phone_verified', 'photo',
         )
         read_only_fields = fields
-
 
 class EmailOrPhoneSerializer(serializers.Serializer):
     email_or_phone = serializers.CharField()
@@ -39,23 +41,7 @@ class EmailOrPhoneSerializer(serializers.Serializer):
         
         
         if user:
-            is_expired_code(user)
-            if auth_type == "VIA_EMAIL":
-                if user.account_status == CustomUser.AccountStatus.PENDING:
-                    user.delete()
-                elif user.email_verified == False:
-                    user.email = f"tempemail_{uuid.uuid4().hex[:12]}@gmail.com"
-                    user.save()
-                elif user.account_status != CustomUser.AccountStatus.PENDING:
-                    raise ValidationError(f"User with this email already exists!")
-            if auth_type == "VIA_PHONE":
-                if user.account_status == CustomUser.AccountStatus.PENDING:
-                    user.delete()
-                elif user.phone_verified == False:
-                    user.phone_number = ""
-                    user.save()
-                elif user.account_status != CustomUser.AccountStatus.PENDING:
-                    raise ValidationError(f"User with this phone number already exists!")
+            base_updater(user, auth_type)
             
         attrs['auth_type'] = auth_type
         attrs['existing_user'] = user
@@ -77,7 +63,6 @@ class EmailOrPhoneSerializer(serializers.Serializer):
         user = CustomUser.objects.create_user(**data)
         return user
     
-
 class VerifyCodeSerializer(serializers.Serializer):
     verification_code = serializers.CharField()
     email_or_phone = serializers.CharField(required=False)
@@ -101,7 +86,6 @@ class VerifyCodeSerializer(serializers.Serializer):
         attrs['verification'] = verification
         attrs['user'] = user
         return attrs
-
 
 class ActivateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -204,7 +188,6 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         
         return user
         
-
 class LoginSerializer(serializers.Serializer):
     email_username_phone = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -241,7 +224,6 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
     
-
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
     
@@ -257,7 +239,6 @@ class LogoutSerializer(serializers.Serializer):
         except:
             raise serializers.ValidationError("Invalid or expired token")
         
-
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -320,7 +301,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
     
-
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
@@ -355,7 +335,6 @@ class PasswordChangeSerializer(serializers.Serializer):
         instance.save()
         return instance
         
-
 class VerifyEmailSerializer(serializers.Serializer):
     email = serializers.CharField()
     
@@ -366,11 +345,8 @@ class VerifyEmailSerializer(serializers.Serializer):
             raise ValidationError("Email is invalid!")
         base_user = CustomUser.objects.filter(email=email).first()
         
-        if base_user and base_user != user:
-            raise ValidationError("User with this email is already exists!")
-        
-        if base_user.email_verified == False and base_user != user:
-            base_user.email = f"temp_{uuid.uuid4().hex[:12]}@gmail.com"
+        if base_user:
+            base_updater(base_user, "VIA_EMAIL")
         
         attrs['base_user'] = base_user
         return attrs
@@ -380,7 +356,6 @@ class VerifyEmailSerializer(serializers.Serializer):
         
         instance.save()
         return instance
-    
     
 class VerifyPhoneSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
@@ -392,16 +367,15 @@ class VerifyPhoneSerializer(serializers.Serializer):
             raise ValidationError("Phone number is invalid!")
         
         base_user = CustomUser.objects.filter(phone_number=phone_number).first()
-        if base_user and base_user != user:
-            raise ValidationError("User with this phone number is already exists!")
+        if base_user:
+            base_updater(base_user, "VIA_PHONE")
         
         return attrs
     
     def update(self, instance, validated_data):
         instance.phone_number = validated_data['phone_number']
         instance.save()
-        return instance
-        
+        return instance    
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email_or_phone = serializers.CharField()
@@ -467,6 +441,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         token_obj.save()
 
         return user
+    
+    
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    
             
             
     

@@ -38,7 +38,7 @@ class CustomUser(AbstractUser, BaseModel):
     
     
     #phone
-    phone_number = models.CharField(max_length=13, unique=True, null=True, blank=True)
+    phone_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
     phone_verified = models.BooleanField(default=False)
     
     photo = models.ImageField(upload_to='users/', blank=True, null=True, validators=[
@@ -90,8 +90,6 @@ class CodeVerify(BaseModel):
         return super().save(*args, **kwargs)
         
 
-        
-
 class UserPreference(BaseModel):
     class ThemeMode(models.TextChoices):
         LIGHT = 'LIGHT', 'dark'
@@ -108,5 +106,4 @@ class UserPreference(BaseModel):
     
     def __str__(self):
         return self.user.username or self.user.email
-    
     

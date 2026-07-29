@@ -1,9 +1,10 @@
 import random
-from .models import CodeVerify
+from .models import CodeVerify, CustomUser
 import re
 from rest_framework import serializers
 from django.utils import timezone
 from baseapp.models import MyToken
+import uuid
 
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
@@ -64,3 +65,23 @@ def generate_mytoken(user, token_for):
 
     token = MyToken.objects.create(user=user, token_for=token_for)
     return token
+
+
+def base_updater(user, auth_type):
+    is_expired_code(user)
+    if auth_type == "VIA_EMAIL":
+        if user.account_status == CustomUser.AccountStatus.PENDING:
+            user.delete()
+        elif user.email_verified == False:
+            user.email = f"tempemail_{uuid.uuid4().hex[:12]}@gmail.com"
+            user.save()
+        elif user.account_status != CustomUser.AccountStatus.PENDING:
+            raise serializers.ValidationError(f"User with this email already exists!")
+    if auth_type == "VIA_PHONE":
+        if user.account_status == CustomUser.AccountStatus.PENDING:
+            user.delete()
+        elif user.phone_verified == False:
+            user.phone_number = ""
+            user.save()
+        elif user.account_status != CustomUser.AccountStatus.PENDING:
+            raise serializers.ValidationError(f"User with this phone number already exists!")

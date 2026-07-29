@@ -11,11 +11,12 @@ Password Change -                     ✅
 Password Reset -                      ✅
 Verify Email -                        ✅
 Verify Phone -                        ✅
-EMAIL Changing Process Safety -       ❌
+EMAIL Changing Process Safety -       ✅
 ACTIVATION safety -                   ✅
+TOKEN_REFRESH -                       ✅
 Overall integrity -                   ❌
 
-11/14
+12/14
 
 
 ### COURSES 
