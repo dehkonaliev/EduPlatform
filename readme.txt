@@ -20,8 +20,7 @@ Overall integrity -                   ✅
 
 ### PROFILES
 -------------------------------------
-___INSTRUCTOR___
-Profiles -           ✅
+Profiles -                            ✅
 
 
 ❌✅

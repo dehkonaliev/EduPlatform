@@ -8,8 +8,8 @@ from rest_framework import status
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from baseapp.emails import send_verification_code
+from baseapp.utils import success_response, error_response, field_error
 from django.db.models import Q
-from baseapp.emails import send_verification_code
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
@@ -33,17 +33,9 @@ class EmailOrPhoneAPIView(APIView):
         
         if auth_type == 'VIA_EMAIL':
             send_verification_code(user.email, code)
-            return Response({
-                'message': "Code sent to the email. Please check your email",
-                'email': user.email,
-                'status': status.HTTP_200_OK
-            })
+            return success_response(message="We have sent the code to your email, please check!", data={"email": user.email})
         elif auth_type == 'VIA_PHONE':
-            return Response({
-                'message': "You can get your code on telegram by your account with this number!",
-                'email': user.phone_number,
-                'status': status.HTTP_200_OK
-            })
+            return success_response(message="You can get the verification code via telegram on this number!", data={"phone_number": user.phone_number})
             
 class VerifyCodeAPIView(APIView):
     permission_classes = [AllowAny]
@@ -58,21 +50,18 @@ class VerifyCodeAPIView(APIView):
         if veirification.verify_type == "VIA_EMAIL":
             user.email_verified = True
             user.save()
-            return Response({
-                'message': 'Email verified!',
-                'email': user.email,
-                'status': status.HTTP_200_OK
-            })
+            return success_response(
+                message="Email verified", 
+                data={"email": user.email, "token": serializer.validated_data['token']}
+            )
         elif veirification.verify_type == "VIA_PHONE":
             user.phone_verified = True
             user.save()
             
-            return Response({
-                'message': 'Phone number verified!',
-                'phone': user.phone_number,
-                'status': status.HTTP_200_OK,
-                "token": serializer.validated_data['token']
-            })
+            return success_response(
+                message="Email verified", 
+                data={"email": user.email, "token": serializer.validated_data['token']}
+            )
             
 class ActivateUserAPIView(APIView):
     permission_classes = [AllowAny]
@@ -83,11 +72,10 @@ class ActivateUserAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return Response({
-            'message': "User Activated!",
-            'status': status.HTTP_200_OK,
-            'data': serializer.data
-        })
+        return success_response(
+            message="User activated", 
+            data=serializer.data
+        )
  
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
@@ -96,11 +84,7 @@ class LoginAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         tokens = serializer.validated_data['tokens']
         
-        return Response({
-            "message": "Logged In!",
-            "status": status.HTTP_200_OK,
-            'tokens': tokens
-        })
+        return success_response(message="Logged in", data=tokens)
         
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -110,10 +94,7 @@ class LogoutAPIView(APIView):
         serializer.is_valid()
         serializer.save()
         
-        return Response({
-            'message': "Logged Out Successfully!",
-            'status': status.HTTP_205_RESET_CONTENT
-        })
+        return success_response(message="Logged out")
         
 class UpdateProfileAPIView(APIView):
     parser_classes = [FormParser, MultiPartParser]
@@ -125,11 +106,7 @@ class UpdateProfileAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return Response({
-            'message': "Profile Updated!",
-            'status': status.HTTP_200_OK,
-            'data': serializer.data
-        })
+        return success_response(message="Profile updated", data=serializer.data)
         
 class PasswordChangeAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -138,10 +115,7 @@ class PasswordChangeAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return Response({
-            'message': "Password changed!",
-            'status': status.HTTP_200_OK
-        })
+        return success_response(message="Password changed")
         
 class DeleteAccountAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -150,49 +124,43 @@ class DeleteAccountAPIView(APIView):
         veirfy_type = request.data.get('verify_type')
         if veirfy_type == "VIA_EMAIL":
             if not user.email_verified:
-                raise ValidationError("You cannot delete your account via email. Your email is not verified!")
+                return error_response(message="You cannot delete your account via email. Your email is not verified!")
             
             is_expired_code(user)
             code = generate_code(user, veirfy_type)
             send_verification_code(user.email, code)
             
-            return Response({
-                "message": "We have sent a verification code to your email!",
-                'status': status.HTTP_200_OK,
-                "veirfy_type": "VIA_EMAIL"
-            })
+            return success_response(
+                message="We have sent the verification code to your email. Please verify your email!",
+                data={"verify_type": "VIA_EMAIL"}
+            )
         elif veirfy_type == "VIA_PHONE":
             if not user.email_verified:
-                raise ValidationError("You cannot delete your account via phone. Your phone number is not verified!")
+                return error_response(message="You cannot delete your account via phone. Your phone number is not verified!")
             
             is_expired_code(user)
             code = generate_code(user, veirfy_type)
             
-            return Response({
-                "message": "You can get your verification code via telegram bot by sharing your phone number!",
-                'status': status.HTTP_200_OK,
-                "veirfy_type": "VIA_PHONE"
-            })
+            return success_response(
+                message="You can get the verification code in telegram!",
+                data={"verify_type": "VIA_PHONE"}
+            )
         else:
-            raise ValidationError("None type verify type!")
+            return error_response(message="Invalid verify type!")
     
     def post(self, request):
         user = request.user
         code = request.data.get('verification_code')
         code = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
         if not code:
-            raise ValidationError("Invalid code!")
+            return field_error("code", "Invalid code!")
         elif code.expire_time < timezone.now():
-            raise ValidationError("Verification code expired!")
+            return field_error("code", "Verification code expired!")
         
         user.account_status = CustomUser.AccountStatus.DELETED
         user.save()
         
-        return Response({
-            'msg': "Account set deleted!",
-            'status': status.HTTP_200_OK,
-            'account_status': user.account_status
-        })
+        return success_response(message="Account set deleted")
 
 class VerifyEmailAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -207,27 +175,26 @@ class VerifyEmailAPIView(APIView):
         is_expired_code(user)
         code = generate_code(user, "VIA_EMAIL")
         send_verification_code(new_email, code)
-        return Response({
-            'msg': "We have sent a verification code to your email!",
-            "status": status.HTTP_200_OK,
-            "verifying": "email"
-        })
+        return success_response(
+            message="We have sent the verification code to your email, please check it!",
+            data={"email": user.email}
+        )
         
     def post(self, request):
         user = request.user
         code = request.data.get('code')
         if len(code) > 6 and not code.isdigit():
-            raise ValidationError("Invalid code!")
+            return field_error("code", "Invalid code!")
         
         verification = check_code(user, code)
         
         user.email_verified = True
         user.save()
         
-        return Response({
-            'message': "Your email verified!",
-            'status': status.HTTP_200_OK
-        })
+        return success_response(
+            message="Email verified!",
+            data={"email": user.email}
+        )
         
 class VerifyPhoneAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -241,27 +208,26 @@ class VerifyPhoneAPIView(APIView):
         
         is_expired_code(user)
         code = generate_code(user, "VIA_PHONE")
-        return Response({
-            'msg': "You can get your code via our telegram bot!",
-            "status": status.HTTP_200_OK,
-            "verifying": "phone"
-        })
-        
+        return success_response(
+            message="You can get your code via our telegram bot!",
+            data={"phone_number": user.phone_number}
+        )
+                
     def post(self, request):
         user = request.user
         code = request.data.get('code')
         if len(code) > 6 and not code.isdigit():
-            raise ValidationError("Invalid code!")
+            return field_error("code","Invalid code!")
         
         verification = check_code(user, code)
         
         user.phone_verified = True
         user.save()
         
-        return Response({
-            'message': "Your phone number verified!",
-            'status': status.HTTP_200_OK
-        })
+        return success_response(
+            message="Your phone number verified!",
+            data={"phone_number": user.phone_number}
+        )
 
 class PasswordResetRequestAPIView(APIView):
     permission_classes = [AllowAny]
@@ -271,17 +237,15 @@ class PasswordResetRequestAPIView(APIView):
         
         verify_type = serializer.validated_data['verify_type']
         if verify_type == 'VIA_EMAIL':
-            return Response({
-                'message': "We have sent reset password link to your email!",
-                'email': serializer.validated_data['email_or_phone'],
-                'status': status.HTTP_200_OK
-            })
+            return success_response(
+                message="We have sent reset password link to your email!",
+                data={"email": serializer.validated_data['email_or_phone']}
+            )
         if verify_type == 'VIA_PHONE':
-            return Response({
-                'message': "You can take your access link via telegram bot!",
-                'email': serializer.validated_data['email_or_phone'],
-                'status': status.HTTP_200_OK
-            })
+            return success_response(
+                message="You can get reset password link via our telegram bot!",
+                data={"email": serializer.validated_data['email_or_phone']}
+            )
 
 class PasswordResetConfirmAPIView(APIView):
     permission_classes = [AllowAny]
@@ -291,10 +255,7 @@ class PasswordResetConfirmAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return Response({
-            'message': "Password Changed!",
-            'status': status.HTTP_200_OK
-        })
+        return success_response(message="Password reset!")
             
         
         

@@ -29,23 +29,12 @@ def check_email_username_phone(user_input):
     
     return False
 
-def check_password(password):
-    if not re.search(r'[A-Z]', password):
-        raise serializers.ValidationError({"password": f"Password must contain at least one uppercase letter."})
-    if not re.search(r'[a-z]', password):
-        raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
-    if not re.search(r'[0-9]', password):
-        raise serializers.ValidationError({"password": "Password must contain at least one digit."})
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
-        raise serializers.ValidationError({"password": "Password must contain at least one special character."})
-    return True
-
 def check_code(user, code):
     verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
     if not verification:
-        raise serializers.ValidationError("Invalid code!")
+        raise serializers.ValidationError({"code":"Invalid code!"})
     elif verification.expire_time < timezone.now():
-        raise serializers.ValidationError("Code expired!")
+        raise serializers.ValidationError({"code":"Code expired!"})
     
     return verification
 
@@ -53,7 +42,7 @@ def is_expired_code(user):
     last_code = user.codes.order_by('-expire_time').first()
     if last_code:
         if last_code.expire_time > timezone.now():
-            raise serializers.ValidationError("Please wait until your current code expires before requesting a new one.")
+            raise serializers.ValidationError({"code":"Please wait until your current code expires before requesting a new one."})
     
     return last_code
         
@@ -61,7 +50,7 @@ def generate_mytoken(user, token_for):
     latest_token = user.my_tokens.order_by('-created_at').first()
 
     if latest_token and latest_token.is_valid():
-        raise serializers.ValidationError("Please wait until your old access link expires!")
+        raise serializers.ValidationError({"non_field_error":"Please wait until your old access link expires!"})
 
     token = MyToken.objects.create(user=user, token_for=token_for)
     return token
@@ -76,7 +65,7 @@ def base_updater(user, auth_type):
             user.email = f"tempemail_{uuid.uuid4().hex[:12]}@gmail.com"
             user.save()
         elif user.account_status != CustomUser.AccountStatus.PENDING:
-            raise serializers.ValidationError(f"User with this email already exists!")
+            raise serializers.ValidationError({"email": f"User with this email already exists!"})
     if auth_type == "VIA_PHONE":
         if user.account_status == CustomUser.AccountStatus.PENDING:
             user.delete()
@@ -84,4 +73,4 @@ def base_updater(user, auth_type):
             user.phone_number = ""
             user.save()
         elif user.account_status != CustomUser.AccountStatus.PENDING:
-            raise serializers.ValidationError(f"User with this phone number already exists!")
+            raise serializers.ValidationError({"phone_number":f"User with this phone number already exists!"})
