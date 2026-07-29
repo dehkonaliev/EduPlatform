@@ -132,23 +132,23 @@ class ActivateUserSerializer(serializers.ModelSerializer):
 
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         if not token_obj:
-            raise serializers.ValidationError({"token": "Invalid or expired token"})
+            return field_error("token", "Invalid or expired token")
 
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
         if not user:
-            raise serializers.ValidationError({"email_or_phone": "No account found with this email or phone"})
+            return field_error("email_or_phone", "No account found with this email or phone")
 
         if token_obj.user != user:
-            raise serializers.ValidationError({"token": "Invalid token"})
+            return field_error("token", "Invalid token")
 
         if password != conf_password:
-            raise serializers.ValidationError({"conf_password": "Passwords do not match"})
+            return field_error("conf_password", "Passwords do not match")
 
         if len(password) < 8:
-            raise serializers.ValidationError({"password": "Password is too short"})
+            return field_error("password", "Password is too short")
 
         if len(password) > 50:
-            raise serializers.ValidationError({"password": "Password is too long"})
+            return field_error("password", "Password is too long")
         password_validator(password)
 
         attrs['user'] = user
@@ -176,9 +176,9 @@ class LoginSerializer(serializers.Serializer):
     def validate_password(self, password):
         
         if len(password) < 8:
-            raise serializers.ValidationError({"password":"Password is too short!"})
+            return field_error("password", "Password is too short!")
         if len(password) > 50:
-            raise serializers.ValidationError("Password is too long!")
+            return field_error("password","Password is too long!")
         
         password_validator(password)
         
@@ -191,10 +191,10 @@ class LoginSerializer(serializers.Serializer):
         user = authenticate(request=self.context.get('request'), username=email_username_phone, password=password)
         
         if not user:
-            raise serializers.ValidationError("Given credentials are incorrect!")
+            return field_error("non_field_error", "Given credentials are incorrect!")
         
         if not user.is_verified:
-            raise serializers.ValidationError("Account is not verified!")
+            return field_error("non_field_error", "Account is not verified!")
         
         refresh = RefreshToken.for_user(user)
         attrs['tokens'] = {
@@ -218,7 +218,7 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
             
         except:
-            raise serializers.ValidationError("Invalid or expired token")
+            return field_error("refresh", "Invalid or expired token")
         
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -240,11 +240,11 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     def validate_photo(self, value):
         max_size_mb = 5
         if value.size > max_size_mb * 1024 * 1024:
-            raise serializers.ValidationError(f"Image must be under {max_size_mb}MB.")
+            return field_error("photo", f"Image must be under {max_size_mb}MB.")
 
         allowed_types = ['image/jpeg', 'image/png', 'image/webp']
         if value.content_type not in allowed_types:
-            raise serializers.ValidationError("Only JPEG, PNG, or WEBP images are allowed.")
+            return field_error("photo", "Only JPEG, PNG, or WEBP images are allowed.")
 
         return value
     
@@ -268,15 +268,15 @@ class PasswordChangeSerializer(serializers.Serializer):
         
         if new_password and conf_password:
             if conf_password != new_password:
-                raise serializers.ValidationError({"conf_password": "Confirm password does not match to new password!"})
+                return field_error("conf_password", "Confirm password does not match to new password!")
             if new_password == old_password:
-                raise serializers.ValidationError({"new_password":"Old password and new password cannot be identical!"})
+                return field_error("new_password","Old password and new password cannot be identical!")
         else:
-            raise serializers.ValidationError({"new_password":"New password and confirm password fields are required!"})
+            return field_error("new_password", "New password and confirm password fields are required!")
         
         user = self.context.get('user')
         if not user.check_password(old_password):
-            raise serializers.ValidationError({"old_password":"Old password is incorrect!"})
+            return field_error("old_password","Old password is incorrect!")
         
         return attrs
     
@@ -292,7 +292,7 @@ class VerifyEmailSerializer(serializers.Serializer):
         email = attrs['email']
         user = self.context.get('user')
         if not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
-            raise ValidationError({"email":"Email is invalid!"})
+            return field_error("email", "Email is invalid!")
         base_user = CustomUser.objects.filter(email=email).first()
         
         if base_user:
