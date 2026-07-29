@@ -14,9 +14,9 @@ Verify Phone -                        ✅
 EMAIL Changing Process Safety -       ✅
 ACTIVATION safety -                   ✅
 TOKEN_REFRESH -                       ✅
-Overall integrity -                   ❌
+Overall integrity -                   ✅
 
-12/14
+14/14
 
 
 ### COURSES 

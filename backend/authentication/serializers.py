@@ -9,7 +9,8 @@ from django.utils import timezone
 import re
 from baseapp.emails import send_verification_code
 from rest_framework_simplejwt.tokens import RefreshToken
-from .utils import (check_email_username_phone, check_password, check_code, generate_mytoken, is_expired_code,
+from .validators import name_validator, username_validator, password_validator
+from .utils import (check_email_username_phone, check_code, generate_mytoken, is_expired_code,
     base_updater,
 )
 
@@ -113,47 +114,14 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         
         return token
         
-    NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
-
     def validate_first_name(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("First name cannot be blank.")
-        if len(value) < 2:
-            raise serializers.ValidationError("First name must be at least 2 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("First name is too long.")
-        if not self.NAME_REGEX.match(value):
-            raise serializers.ValidationError("First name may only contain letters, spaces, hyphens, and apostrophes.")
-        return value.title()
+        return name_validator(value, "First name")
 
     def validate_last_name(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Last name cannot be blank.")
-        if len(value) < 2:
-            raise serializers.ValidationError("Last name must be at least 2 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("Last name is too long.")
-        if not self.NAME_REGEX.match(value):
-            raise serializers.ValidationError("Last name may only contain letters, spaces, hyphens, and apostrophes.")
-        return value.title()
+        return name_validator(value, "Last name")
     
     def validate_username(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Username cannot be blank.")
-        if len(value) < 3:
-            raise serializers.ValidationError("Username must be at least 3 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("Username is too long.")
-        if not re.fullmatch(r'^[A-Za-z0-9_]+$', value):
-            raise serializers.ValidationError("Username may only contain letters, numbers, and underscores.")
-        if value[0].isdigit():
-            raise serializers.ValidationError("Username cannot start with a number.")
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A user with this username already exists!")
-        return value
+        return username_validator(value)
     
     def validate(self, attrs):
         password = attrs['password']
@@ -173,7 +141,7 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         if len(password) > 50:
             raise serializers.ValidationError("Password is too long!")
         
-        check_password(password)
+        password_validator(password)
         attrs['user'] = user
         return attrs
     
@@ -199,7 +167,7 @@ class LoginSerializer(serializers.Serializer):
         if len(password) > 50:
             raise serializers.ValidationError("Password is too long!")
         
-        check_password(password)
+        password_validator(password)
         
         return password
     
@@ -248,44 +216,13 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
     
     def validate_first_name(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("First name cannot be blank.")
-        if len(value) < 2:
-            raise serializers.ValidationError("First name must be at least 2 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("First name is too long.")
-        if not self.NAME_REGEX.match(value):
-            raise serializers.ValidationError("First name may only contain letters, spaces, hyphens, and apostrophes.")
-        return value.title()
+        return name_validator(value, 'First name')
 
     def validate_last_name(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Last name cannot be blank.")
-        if len(value) < 2:
-            raise serializers.ValidationError("Last name must be at least 2 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("Last name is too long.")
-        if not self.NAME_REGEX.match(value):
-            raise serializers.ValidationError("Last name may only contain letters, spaces, hyphens, and apostrophes.")
-        return value.title()
+        return name_validator(value, "Last name")
     
     def validate_username(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Username cannot be blank.")
-        if len(value) < 3:
-            raise serializers.ValidationError("Username must be at least 3 characters.")
-        if len(value) > 50:
-            raise serializers.ValidationError("Username is too long.")
-        if not re.fullmatch(r'^[A-Za-z0-9_]+$', value):
-            raise serializers.ValidationError("Username may only contain letters, numbers, and underscores.")
-        if value[0].isdigit():
-            raise serializers.ValidationError("Username cannot start with a number.")
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A user with this username already exists!")
-        return value
+        return username_validator(value)
     
     def validate_photo(self, value):
         max_size_mb = 5
@@ -307,7 +244,7 @@ class PasswordChangeSerializer(serializers.Serializer):
     conf_password = serializers.CharField(write_only=True)
     
     def validate_new_password(self, password):
-        check_password(password)
+        password_validator(password)
         return password        
     
     def validate(self, attrs):
@@ -417,7 +354,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         new_password = attrs['new_password']
         conf_password = attrs['conf_password']
         
-        check_password(new_password)
+        password_validator(new_password)
         if new_password != conf_password:
             raise serializers.ValidationError("Confirm password does not match!")
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
