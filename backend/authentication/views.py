@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import IsOwnerOrAdmin
 from .models import CustomUser, CodeVerify
 from .utils import generate_code, check_code, is_expired_code
 from rest_framework.response import Response
@@ -14,7 +16,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
     VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
-    
+    UserSerializer
 )
 
 
@@ -107,7 +109,8 @@ class UpdateProfileAPIView(APIView):
         serializer.save()
         
         return success_response(message="Profile updated", data=serializer.data)
-        
+    
+    
 class PasswordChangeAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
