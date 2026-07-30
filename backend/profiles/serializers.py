@@ -59,7 +59,7 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
         website_url = attrs.get('website_url', getattr(self.instance, 'website_url', None))
 
         if not linkedin_url and not website_url:
-            return field_error("non_field_error": "Please, provide at least one of above!")
+            return field_error("non_field_error", "Please, provide at least one of above!")
         return attrs
         
     

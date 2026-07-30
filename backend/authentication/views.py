@@ -110,7 +110,16 @@ class UpdateProfileAPIView(APIView):
         
         return success_response(message="Profile updated", data=serializer.data)
     
-    
+class UserProfileAPIView(APIView):
+    permission_classes = [IsOwnerOrAdmin]
+    def get(self, request, pk):
+        user = CustomUser.objects.filter(pk=pk).first()
+        if not user:
+            return error_response(message="User not found")
+        
+        serializer = UserSerializer(user)
+        return success_response(message="Profile info", data=serializer.data)
+
 class PasswordChangeAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -260,7 +269,6 @@ class PasswordResetConfirmAPIView(APIView):
         
         return success_response(message="Password reset!")
             
-        
         
         
         

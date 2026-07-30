@@ -98,7 +98,7 @@ class UserPreference(BaseModel):
         
     theme = models.CharField(max_length=10, choices=ThemeMode.choices, default=ThemeMode.SYSTEM)
         
-    user = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='preference')
+    user = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE)
     language = models.CharField(max_length=20, default='en')
     timezone = models.CharField(max_length=50, default='UTC')
     email_notifications = models.BooleanField(default=True)

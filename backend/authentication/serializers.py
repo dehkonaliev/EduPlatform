@@ -17,13 +17,23 @@ from .utils import (check_email_username_phone, check_code, generate_mytoken, is
 
 
 
+class UserPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPreference
+        fields = ('theme', 'language', 'timezone', 'email_notifications', 'push_notifications')
+        read_only_fields = fields
+
+
 class UserSerializer(serializers.ModelSerializer):
+    user_preference = UserPreferenceSerializer(source='userpreference', read_only=True)
+
     class Meta:
         model = CustomUser
         fields = (
             'id', 'email', 'phone_number', 'first_name', 'last_name',
             'user_role', 'auth_type', 'account_status',
             'email_verified', 'phone_verified', 'photo',
+            'user_preference',
         )
         read_only_fields = fields
 
