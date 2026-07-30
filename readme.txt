@@ -21,11 +21,24 @@ Overall integrity -                   ✅
 ### PROFILES
 -------------------------------------
 Profiles -                            ✅
+Profile Preferences -                 ❌
+
 
 
 ❌✅
 ### COURSES 
 -------------------------------------
+<<< INSTRUCTORS >>>
+#1 Course CRUD -                      ✅
+#2 Module CRUD -                      ❌
+#3 Lesson CRUD -                      ❌
+
+<<< STUDENTS >>>
+
+
+<<< SUPERUSER >>>
+
+
 
 
 ### REVIEWS
