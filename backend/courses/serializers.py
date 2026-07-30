@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from baseapp.utils import field_error
 from .models import Course, Category, Module, Lesson, Tag
+from django.utils.text import slugify
+from baseapp.utils import error_response, success_response, field_error
 
 
 from rest_framework import serializers
@@ -34,8 +36,7 @@ class CategoryGetCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return super().create(validated_data)
     
-    
-    
+     
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -154,6 +155,29 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
         return attrs
     
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags', None)
+
+        new_title = validated_data.get('title')
+        if new_title and new_title != instance.title:
+            base_slug = slugify(new_title)
+            slug = base_slug
+            counter = 1
+            while Course.objects.filter(slug=slug).exclude(pk=instance.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            instance.slug = slug
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if tags is not None:
+            instance.tags.set(tags)
+
+        return instance
+        
+    
     def create(self, validated_data):
         request = self.context['request']
         tags = validated_data.pop('tags', [])
@@ -164,4 +188,36 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             course.tags.set(tags)
         return course
         
+
+class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Module
+        fields = ["id", 'course', 'title', 'order']
+        read_only_fields = ['id']
+    
+    def validate_course(self, value):
+        if value.instructor != self.context['request'].user:
+            return error_response(message="You have no access to create a module for this course")
+        return value
+    
+    def validate_title(self, value):
+        value = value.strip()
+        if len(value) > 255:
+            return field_error("title", "Title cannot exceed 255 characters long")
+        
+        return value
+    
+    def validate_order(self, value):
+        if not isinstance(value, int):
+            return field_error("order", "Order must be integer")
+        if int(value) <= 0:
+            return field_error("order", "Order must be bigger than 0")
+        
+        return value
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+    
+    def create(self, validated_data):
+        return super().create(validated_data)
         
