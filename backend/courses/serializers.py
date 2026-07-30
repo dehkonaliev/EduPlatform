@@ -1,0 +1,167 @@
+from rest_framework import serializers
+from baseapp.utils import field_error
+from .models import Course, Category, Module, Lesson, Tag
+
+
+from rest_framework import serializers
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError as DjangoValidationError
+
+from .models import Course, Category, Tag
+
+class CategoryGetCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'icon']
+        read_only_fields = ['id', 'slug']
+        
+    def validate_name(self, value):
+        value = value.strip()
+        
+        if len(value) > 100:
+            return field_error("name", "Name cannot exceed 100 characters long")
+        elif len(value) < 5:
+            return field_error("name", "Name must be at least 5 characters long")
+        return value
+    
+    def validate_icon(self, value):
+        value = value.strip()
+        if len(value) > 20:
+            return field_error("icon", "Icon cannot exceed 20 characters long")
+        
+        return value
+    
+    def create(self, validated_data):
+        return super().create(validated_data)
+    
+    
+    
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'name']
+        read_only_fields = ['id']
+        
+    def validate_name(self, value):
+        value = value.strip()
+        
+        if len(value) > 50:
+            return field_error("name", "Name cannot exceed 50 characters long")
+        elif len(value) < 5:
+            return field_error("name", "Name must be at least 5 characters long")
+        return value
+    
+    def create(self, validated_data):
+        return super().create(validated_data)
+        
+
+class CourseCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = [
+            'id', 'title', 'slug', 'subtitle', 'description',
+            'category', 'tags', 'level', 'language', 'thumbnail',
+            'intro_video', 'pricing_type', 'price', 'requirements',
+            'what_included'
+        ]
+        read_only_fields = ['id','slug']
+
+
+    def validate_title(self, value):
+        value = value.strip()
+        if len(value) < 5:
+            return field_error("title", "Title must be at least 5 characters long")
+        if len(value) > 300:
+            return field_error("title", "Title cannot exceed 300 characters")
+        return value
+
+    def validate_description(self, value):
+        value = value.strip()
+        if len(value) < 20:
+            return field_error("description", "Description must be at least 20 characters long")
+        return value
+
+    def validate_category(self, value):
+        if value is None:
+            return field_error("category", "Category is required")
+        return value
+
+    def validate_tags(self, value):
+        if len(value) > 10:
+            return field_error("tags", "You can assign a maximum of 10 tags to a course.")
+        return value
+
+    def validate_language(self, value):
+        # Adjust this list to whatever languages your platform actually supports
+        supported_languages = ['en', 'uz', 'ru', 'es', 'fr', 'de', 'zh', 'ar']
+        if value not in supported_languages:
+            return field_error("language", f"'{value}' is not a supported language code. Choose one of: {', '.join(supported_languages)}."
+            )
+        return value
+
+    def validate_thumbnail(self, value):
+        if value:
+            max_size_mb = 2
+            if value.size > max_size_mb * 1024 * 1024:
+                return field_error("thubmnail", f"Thumbnail size must not exceed {max_size_mb}MB.")
+
+            valid_extensions = ['jpg', 'jpeg', 'png', 'webp']
+            ext = value.name.rsplit('.', 1)[-1].lower()
+            if ext not in valid_extensions:
+                return field_error("thubmnail", f"Unsupported image format '.{ext}'. Allowed formats: {', '.join(valid_extensions)}.")
+        return value
+
+    def validate_intro_video(self, value):
+        if value:
+            allowed_domains = ['youtube.com', 'youtu.be', 'vimeo.com']
+            if not any(domain in value for domain in allowed_domains):
+                return field_error("intro_video", "Intro video must be a link from YouTube or Vimeo.")
+        return value
+
+    def validate_price(self, value):
+        if value is not None and value < 0:
+            return field_error("price", "Price cannot be negative.")
+        return value
+
+    def validate_requirements(self, value):
+        if value and len(value.strip()) > 1000:
+            return field_error("requirements", "Requirements cannot exceed 1000 characters.")
+        return value
+
+    def validate_what_included(self, value):
+        if value and len(value.strip()) > 1500:
+            return field_error("what_included", "'What's included' cannot exceed 1500 characters")
+        return value
+
+
+    def validate(self, attrs):
+        pricing_type = attrs.get(
+            'pricing_type',
+            getattr(self.instance, 'pricing_type', None)
+        )
+        price = attrs.get(
+            'price',
+            getattr(self.instance, 'price', None)
+        )
+
+        if pricing_type == Course.PricingType.FREE:
+            attrs['price'] = None
+        elif pricing_type in (Course.PricingType.MONTHLY, Course.PricingType.SPECIAL):
+            if price is None:
+                return field_error("price", "Price is required for monthly or special pricing")
+            if price <= 0:
+                return field_error("price", "Price must be greater than 0 for paid courses")
+
+        return attrs
+    
+    def create(self, validated_data):
+        request = self.context['request']
+        tags = validated_data.pop('tags', [])
+        validated_data['instructor'] = request.user
+        
+        course = Course.objects.create(**validated_data)
+        if tags:
+            course.tags.set(tags)
+        return course
+        
+        

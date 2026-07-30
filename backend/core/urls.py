@@ -22,7 +22,8 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authentication.urls')),
-    path('api/profile/', include('profiles.urls'))
+    path('api/profile/', include('profiles.urls')),
+    path('api/courses/', include('courses.urls'))
 ]
 
 if settings.DEBUG:
