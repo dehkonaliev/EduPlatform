@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .permissions import IsOwnerOrAdmin
 from .models import CustomUser, CodeVerify
 from .utils import generate_code, check_code, is_expired_code
 from rest_framework.response import Response
@@ -111,7 +110,7 @@ class UpdateProfileAPIView(APIView):
         return success_response(message="Profile updated", data=serializer.data)
     
 class UserProfileAPIView(APIView):
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         user = CustomUser.objects.filter(pk=pk).first()
         if not user:

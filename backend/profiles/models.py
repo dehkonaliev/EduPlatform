@@ -16,7 +16,7 @@ class StudentProfile(BaseModel):
    
 
 class InstructorProfile(BaseModel):
-    user = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, related_name='instructor_profile')
+    instructor = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, related_name='instructor_profile')
     headline = models.CharField(max_length=200, blank=True, null=True)
     bio = models.CharField(max_length=2000, blank=True, null=True)
     

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from baseapp.utils import field_error
 from .models import Course, Category, Module, Lesson, Tag
 from django.utils.text import slugify
-from baseapp.utils import error_response, success_response, field_error
+from baseapp.utils import field_error
 
 
 from rest_framework import serializers
@@ -194,30 +194,22 @@ class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
         model = Module
         fields = ["id", 'course', 'title', 'order']
         read_only_fields = ['id']
-    
+
     def validate_course(self, value):
         if value.instructor != self.context['request'].user:
-            return error_response(message="You have no access to create a module for this course")
+            return field_error("course","You have no access to create a module for this course")
         return value
-    
+
     def validate_title(self, value):
         value = value.strip()
+        if not value:
+            return field_error("title","Title cannot be empty")
         if len(value) > 255:
-            return field_error("title", "Title cannot exceed 255 characters long")
-        
+            return field_error("title","Title cannot exceed 255 characters long")
         return value
-    
+
     def validate_order(self, value):
-        if not isinstance(value, int):
-            return field_error("order", "Order must be integer")
-        if int(value) <= 0:
-            return field_error("order", "Order must be bigger than 0")
-        
+        if value <= 0:
+            return field_error("order","Order must be bigger than 0")
         return value
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
-    
-    def create(self, validated_data):
-        return super().create(validated_data)
         

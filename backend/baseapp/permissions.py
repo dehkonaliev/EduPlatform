@@ -72,5 +72,5 @@ class IsInstructorOrAdmin(BasePermission):
         return bool(
             request.user and
             request.user.is_authenticated and
-            (request.user == obj.user or request.user.is_staff)
+            (request.user == obj.instructor or request.user.is_staff)
         )

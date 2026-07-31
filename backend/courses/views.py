@@ -47,7 +47,7 @@ class CourseUpDelAPIView(APIView):
         
         course.delete()
         
-        return success_response(message="Course deleted", status_code=204)
+        return success_response(message="Course deleted")
 
 class ModuleCreateAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -67,13 +67,24 @@ class ModuleUpdateDeleteAPIView(APIView):
         if not module:
             return error_response(message="Module not found", status_code=404)
         
-        self.check_object_permissions(request, module)
+        self.check_object_permissions(request, module.course)
         
         serializer = ModuleCreateUpdateSerializer(instance=module, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
         return success_response(message="Module updated", data=serializer.data)
+    
+    def delete(self, request, pk):
+        module = Module.objects.filter(pk=pk).first()
+        if not module:
+            return error_response(message="Module not found", status_code=404)
+        
+        self.check_object_permissions(request, module.course)
+        
+        module.delete()
+        
+        return success_response(message="Module deleted")
         
 
 

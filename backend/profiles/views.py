@@ -38,7 +38,7 @@ class StudentProfileAPIView(APIView):
 class InstructorProfileAPIView(APIView):
     permission_classes = [IsAuthenticated, IsInstructorOrAdmin]
     def get(self, request):
-        profile = InstructorProfile.objects.filter(user=request.user).first()
+        profile = InstructorProfile.objects.filter(instructor=request.user).first()
         if not profile:
             return error_response(message="Instructor profile not found", status_code=404)
         
@@ -47,7 +47,7 @@ class InstructorProfileAPIView(APIView):
         return success_response(message="Instructor profile retreived", data=serializer.data)
     
     def patch(self, request):
-        profile = InstructorProfile.objects.filter(user=request.user).first()
+        profile = InstructorProfile.objects.filter(instructor=request.user).first()
         if not profile:
             return error_response(message="Instructor profile not found", status_code=404)
         
