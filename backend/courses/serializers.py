@@ -187,7 +187,19 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         if tags:
             course.tags.set(tags)
         return course
-        
+
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = [
+            'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
+            'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
+            'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
+            'total_reviews', 'requirements', 'what_included'
+        ]
+        read_only_fields = fields
+      
 
 class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:

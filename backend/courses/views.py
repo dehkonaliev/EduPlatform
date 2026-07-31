@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
-from baseapp.permissions import IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner
+from rest_framework.permissions import AllowAny
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
-    ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer
+    ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer
+)
+from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
+    IsAdminOrOwnerOrReadOnlyPublished
 )
 
 
@@ -58,7 +61,22 @@ class ModuleCreateAPIView(APIView):
         serializer.save()
         
         return success_response(message="Module created", status_code=201, data=serializer.data)
-    
+
+class CourseDetailAPIView(APIView):
+    permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
+    def get(self, request, pk):
+        course = Course.objects.filter(pk=pk).first()
+        
+        if not course:
+            return error_response(message="Course not found", status_code=404)
+        if not request.user.is_authenticated and course.status != Course.Status.PUBLISHED:
+            return error_response(message="Course not found", status_code=404)
+        
+        self.check_object_permissions(request, course)
+        
+        serializer = CourseDetailSerializer(course)
+        return success_response(message="Course detail", data=serializer.data)
+
 class ModuleUpdateDeleteAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
     

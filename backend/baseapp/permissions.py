@@ -74,3 +74,17 @@ class IsInstructorOrAdmin(BasePermission):
             request.user.is_authenticated and
             (request.user == obj.instructor or request.user.is_staff)
         )
+        
+class IsAdminOrOwnerOrReadOnlyPublished(BasePermission):
+    def has_permission(self, request, view):
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS and obj.status == "PUBLISHED":
+            return True
+
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user == obj.instructor or request.user.is_superuser)
+        )

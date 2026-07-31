@@ -29,7 +29,7 @@ Profile Preferences -                 ❌
 ### COURSES 
 -------------------------------------
 <<< Overall get requests >>>
-Get Course Detail -                  ❌
+Get Course Detail -                  ✅
 Get Module Detail -                  ❌
 Get Lesson detail -                  ❌
 
