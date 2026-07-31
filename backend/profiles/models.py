@@ -13,7 +13,7 @@ class StudentProfile(BaseModel):
     total_courses_enrolled = models.PositiveIntegerField(default=0)
     total_courses_completed = models.PositiveIntegerField(default=0)
     total_certificates_earned = models.PositiveIntegerField(default=0)
-    
+   
 
 class InstructorProfile(BaseModel):
     user = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, related_name='instructor_profile')

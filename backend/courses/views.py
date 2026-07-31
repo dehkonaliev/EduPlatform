@@ -58,6 +58,23 @@ class ModuleCreateAPIView(APIView):
         serializer.save()
         
         return success_response(message="Module created", status_code=201, data=serializer.data)
+    
+class ModuleUpdateDeleteAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    
+    def patch(self, request, pk):
+        module = Module.objects.filter(pk=pk).first()
+        if not module:
+            return error_response(message="Module not found", status_code=404)
+        
+        self.check_object_permissions(request, module)
+        
+        serializer = ModuleCreateUpdateSerializer(instance=module, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Module updated", data=serializer.data)
+        
 
 
 

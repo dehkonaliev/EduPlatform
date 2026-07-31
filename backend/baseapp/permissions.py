@@ -42,3 +42,35 @@ class IsInstructorAndOwner(BasePermission):
             request.user.is_authenticated and
             request.user == obj.instructor
         )
+        
+class IsStudentOrAdmin(BasePermission):\
+    # Only STUDENTs can get in and see
+    def has_permission(self, request, view):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user.user_role == 'STUDENT' or request.user.is_staff)
+        )
+        
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user == obj.user or request.user.is_staff)
+        )
+        
+class IsInstructorOrAdmin(BasePermission):
+    # On INSTRUCTORs can get
+    def has_permission(self, request, view):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user.user_role == 'INSTRUCTOR' or request.user.is_staff)
+        )
+        
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user == obj.user or request.user.is_staff)
+        )
