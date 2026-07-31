@@ -29,9 +29,9 @@ Profile Preferences -                 ❌
 ### COURSES 
 -------------------------------------
 <<< INSTRUCTORS >>>
-#1 Course CRUD -                      ✅
-#2 Module CRUD -                      ❌
-#3 Lesson CRUD -                      ❌
+#1 Course CRU -                      ✅
+#2 Module CRU -                      ✅
+#3 Lesson CRU -                      ❌
 
 <<< STUDENTS >>>
 
