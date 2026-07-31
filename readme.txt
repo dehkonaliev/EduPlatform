@@ -28,10 +28,20 @@ Profile Preferences -                 ❌
 ❌✅
 ### COURSES 
 -------------------------------------
+<<< Overall get requests >>>
+Get Course Detail -                  ❌
+Get Module Detail -                  ❌
+Get Lesson detail -                  ❌
+
+Get Courses Filtered -               ❌
+Search Courses -                     ❌
+
+
 <<< INSTRUCTORS >>>
 #1 Course CRU -                      ✅
 #2 Module CRU -                      ✅
-#3 Lesson CRU -                      ❌
+#3 Lesson CRU -                      ✅
+#4 Get My Courses With Filter -      ❌
 
 <<< STUDENTS >>>
 
