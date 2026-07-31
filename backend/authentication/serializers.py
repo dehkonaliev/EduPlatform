@@ -95,6 +95,7 @@ class VerifyCodeSerializer(serializers.Serializer):
         
         token = generate_mytoken(user, 'ACTIVATION')
         
+        attrs['token'] = token.token
         attrs['verification'] = verification
         attrs['user'] = user
         return attrs
@@ -114,6 +115,7 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['id', 'email_or_phone', 'token', 'first_name', 'last_name', 'username', 'user_role', 'password', 'conf_password']
         read_only_fields = ['id']
+        write_only_fields = ['token']
         
         
     def validate_token(self, token):
@@ -147,6 +149,9 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
         if not user:
             return field_error("email_or_phone", "No account found with this email or phone")
+        
+        if user.account_status == CustomUser.AccountStatus.ACTIVE:
+            return field_error("email_or_phone", "User already activated")
 
         if token_obj.user != user:
             return field_error("token", "Invalid token")
@@ -165,18 +170,25 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         return attrs
         
     def save(self):
-        user = self.validated_data['user']
-        user.password = self.validated_data['password']
-        user.set_password(self.validated_data['password'])
-        if self.validated_data['user_role'] == CustomUser.UserRole.STUDENT:
+        user = self.validated_data.pop('user')
+        password = self.validated_data.pop('password')
+        user_role = self.validated_data.get('user_role')
+
+        user.set_password(password)
+
+        for attr, value in self.validated_data.items():
+            setattr(user, attr, value)
+
+        if user_role == CustomUser.UserRole.STUDENT:
             StudentProfile.objects.create(user=user)
-        elif self.validated_data['user_role'] == CustomUser.UserRole.INSTRUCTOR:
-            InstructorProfile.objects.create(user=user)
+        elif user_role == CustomUser.UserRole.INSTRUCTOR:
+            InstructorProfile.objects.create(instructor=user)
+
         user.account_status = CustomUser.AccountStatus.ACTIVE
         user.save()
-        
+
         UserPreference.objects.create(user=user)
-        
+
         return user
         
 class LoginSerializer(serializers.Serializer):

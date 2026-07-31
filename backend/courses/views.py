@@ -4,7 +4,7 @@ from .models import Category, Course, Lesson, Module, Tag
 from baseapp.permissions import IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
-    ModuleCreateUpdateSerializer
+    ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer
 )
 
 
@@ -85,9 +85,40 @@ class ModuleUpdateDeleteAPIView(APIView):
         module.delete()
         
         return success_response(message="Module deleted")
+
+class LessonCreateAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def post(self, request):
+        serializer = LessonCreateUpdateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         
+        return success_response(message="Lesson created", data=serializer.data, status_code=201)
+           
 
-
+class LessonUpDelAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def patch(self, request, pk):
+        lesson = Lesson.objects.filter(pk=pk).first()
+        if not lesson:
+            return error_response(message="Lesson not found", status_code=404)
+        serialier = LessonCreateUpdateSerializer(instance=lesson, data=request.data, partial=True, context={'request': request})
+        serialier.is_valid(raise_exception=True)
+        serialier.save()
+        
+        return success_response(message="Lesson updated", data=serialier.data)
+    
+    def delete(self, request, pk):
+        lesson = Lesson.objects.filter(pk=pk).first()
+        if not lesson:
+            return error_response(message="Lesson not found", status_code=404)
+        
+        self.check_object_permissions(request, lesson.module.course)
+        lesson.delete()
+        
+        return success_response(message="Lesson deleted")
+        
+    
 
 
 

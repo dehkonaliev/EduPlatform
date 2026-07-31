@@ -68,7 +68,6 @@ class ActivateUserAPIView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        
         serializer = ActivateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

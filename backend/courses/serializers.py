@@ -212,4 +212,56 @@ class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
         if value <= 0:
             return field_error("order","Order must be bigger than 0")
         return value
+    
+  
+class LessonCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ['id', 'module', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview']
+        read_only_fields = ['id']
+        
+    def validate_title(self, value):
+        value = value.strip()
+        if not value:
+            return field_error("title", "Title cannot be blank")
+        if len(value) > 255:
+            return field_error("title", "Title cannot exceed 255 characters long")
+        
+        return value
+        
+    def validate_lesson_type(self, value):
+        if value not in Lesson.LessonType.values:
+            field_error("lesson_type", f"Lesson type must be one of {Lesson.LessonType.values}")
+        return value
+    
+    def validate_module(self, value):
+        if value.course.instructor != self.context['request'].user:
+            field_error("module", "You have no access to add a lesson to this module")
+        return value
+    
+    def validate_duration_minutes(self, value):
+        if not value:
+            return field_error("duration_minutes", "Duration time must be greater than 0")
+        
+        return value
+    
+    def validate_order(self, value):
+        if not value:
+            return field_error("order", "Order time must be greater than 0")
+        
+        return value
+        
+    def validate(self, attrs):
+        lesson_type = attrs.get('lesson_type', getattr(self.instance, 'lesson_type', None))
+        video_url = attrs.get('video_url', getattr(self.instance, 'video_url', None))
+        content = attrs.get('content', getattr(self.instance, 'content', None))
+
+        if lesson_type == Lesson.LessonType.VIDEO and not video_url:
+            field_error("video_url", "Video URL is required for video lessons")
+
+        if lesson_type == Lesson.LessonType.ARTICLE and not content:
+            field_error("content", "Content is required for article lessons")
+
+        return attrs
+
         

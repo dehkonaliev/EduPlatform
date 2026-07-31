@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.utils import timezone
 from baseapp.models import MyToken
 import uuid
+from baseapp.utils import field_error
 
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
@@ -32,9 +33,9 @@ def check_email_username_phone(user_input):
 def check_code(user, code):
     verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
     if not verification:
-        raise serializers.ValidationError({"code":"Invalid code!"})
+        return field_error("verification_code", "Invalid code")
     elif verification.expire_time < timezone.now():
-        raise serializers.ValidationError({"code":"Code expired!"})
+        return field_error("verification_code", "Code expired")
     
     return verification
 
