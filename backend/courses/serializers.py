@@ -268,9 +268,13 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
 
 # MODULE DETAIL
 class CourseMinimalSerializer(serializers.ModelSerializer):
+    modules = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'slug']
+        fields = ['id', 'title', 'slug', 'modules']
+
+    def get_modules(self, obj):
+        return list(obj.modules.order_by('order').values('id', 'title', 'order'))
 
 
 class LessonSerializer(serializers.ModelSerializer):
