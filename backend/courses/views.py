@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
 from rest_framework.permissions import AllowAny
+from django.db.models import Q
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
@@ -172,6 +173,7 @@ class FilteredCoursesAPIView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         
+        search = request.query_params.get('search')
         instructor = request.query_params.get('instructor')
         category = request.query_params.get('category')
         tag = request.query_params.get('tag')
@@ -182,12 +184,19 @@ class FilteredCoursesAPIView(APIView):
         
         courses = Course.objects.filter(status=Course.Status.PUBLISHED)
         
+        if search:
+            courses = courses.filter(
+                Q(title__icontains=search) |
+                Q(subtitle__icontains=search |
+                Q(what_included__icontains=search))
+            )
+        
         if instructor:
             courses = courses.filter(instructor=instructor)
         if category:
             courses = courses.filter(category=category)
         if tag:
-            courses = courses.filter(tag=tag)
+            courses = courses.filter(tags__name__icontains=tag)
         if level:
             courses = courses.filter(level=level)
         if language:
@@ -195,17 +204,67 @@ class FilteredCoursesAPIView(APIView):
         if pricing_type:
             courses = courses.filter(pricing_type=pricing_type)
         if rating:
+            try:
+                rating_value = float(rating)
+                courses = courses.filter(average_rating__gte=rating_value)
+            except:
+                return error_response(message="Rating must a number")
             courses = courses.filter(average_rating__gte=rating)
+            
+        courses = courses.distinct()
         
         serializer = CourseInfoSerializer(courses, many=True)
         
         return success_response(message="Filtered courses", data=serializer.data)
     
-
-
-
-
-
+class FilteredCoursesInstructorAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def get(self, request):
+        
+        search = request.query_params.get('search')
+        instructor = request.query_params.get('instructor')
+        category = request.query_params.get('category')
+        tag = request.query_params.get('tag')
+        level = request.query_params.get('level')
+        language = request.query_params.get('language')
+        pricing_type = request.query_params.get('pricing_type')
+        rating = request.query_params.get('rating')
+        
+        courses = Course.objects.filter(status=Course.Status.PUBLISHED, instructor=request.user)
+        
+        if search:
+            courses = courses.filter(
+                Q(title__icontains=search) |
+                Q(subtitle__icontains=search |
+                Q(what_included__icontains=search))
+            )
+        
+        if instructor:
+            courses = courses.filter(instructor=instructor)
+        if category:
+            courses = courses.filter(category=category)
+        if tag:
+            courses = courses.filter(tags__name__icontains=tag)
+        if level:
+            courses = courses.filter(level=level)
+        if language:
+            courses = courses.filter(language=language)
+        if pricing_type:
+            courses = courses.filter(pricing_type=pricing_type)
+        if rating:
+            try:
+                rating_value = float(rating)
+                courses = courses.filter(average_rating__gte=rating_value)
+            except:
+                return error_response(message="Rating must a number")
+            courses = courses.filter(average_rating__gte=rating)
+            
+        courses = courses.distinct()
+        
+        serializer = CourseInfoSerializer(courses, many=True)
+        
+        return success_response(message="Filtered instructor courses", data=serializer.data)
+    
 
 
 
