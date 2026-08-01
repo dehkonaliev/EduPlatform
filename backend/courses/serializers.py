@@ -188,17 +188,6 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             course.tags.set(tags)
         return course
 
-
-class CourseDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = [
-            'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
-            'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
-            'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
-            'total_reviews', 'requirements', 'what_included'
-        ]
-        read_only_fields = fields
       
 
 class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -224,7 +213,8 @@ class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
         if value <= 0:
             return field_error("order","Order must be bigger than 0")
         return value
-    
+
+
   
 class LessonCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -276,4 +266,57 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
 
         return attrs
 
+# MODULE DETAIL
+class CourseMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'slug']
+
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = [
+            'id', 'title', 'lesson_type', 'duration_minutes', 'order', 'is_preview',
+        ]
+
+
+class ModuleDetailSerializer(serializers.ModelSerializer):
+    course = CourseMinimalSerializer(read_only=True)
+    lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'order', 'course', 'lessons']
+        read_only_fields = fields
+
+# COURSE DETAIL
+class ModuleMinimalSerializer(serializers.ModelSerializer):
+    course = CourseMinimalSerializer(read_only=True)
+    lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'order', 'course', 'lessons']
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    modules = ModuleMinimalSerializer(many=True, read_only=True)
+    class Meta:
+        model = Course
+        fields = [
+            'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
+            'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
+            'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
+            'total_reviews', 'requirements', 'what_included', 'modules'
+        ]
+        read_only_fields = fields
+        
+# LESSON DETAIL
+class LessonDetailSerializer(serializers.ModelSerializer):
+    module = ModuleMinimalSerializer(read_only=True)
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module']
+        read_only_fields = fields
+        
         

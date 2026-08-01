@@ -4,7 +4,8 @@ from .models import Category, Course, Lesson, Module, Tag
 from rest_framework.permissions import AllowAny
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
-    ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer
+    ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
+    LessonDetailSerializer, 
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished
@@ -19,6 +20,7 @@ class CourseCreateAPIView(APIView):
         serializer.save()
         
         return success_response(message="Course created", data=serializer.data, status_code=201)
+   
     
 class CourseUpDelAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -52,15 +54,6 @@ class CourseUpDelAPIView(APIView):
         
         return success_response(message="Course deleted")
 
-class ModuleCreateAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def post(self, request):
-        user = request.user
-        serializer = ModuleCreateUpdateSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return success_response(message="Module created", status_code=201, data=serializer.data)
 
 class CourseDetailAPIView(APIView):
     permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
@@ -76,6 +69,18 @@ class CourseDetailAPIView(APIView):
         
         serializer = CourseDetailSerializer(course)
         return success_response(message="Course detail", data=serializer.data)
+
+
+class ModuleCreateAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def post(self, request):
+        user = request.user
+        serializer = ModuleCreateUpdateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Module created", status_code=201, data=serializer.data)
+
 
 class ModuleUpdateDeleteAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -103,6 +108,20 @@ class ModuleUpdateDeleteAPIView(APIView):
         module.delete()
         
         return success_response(message="Module deleted")
+
+class ModuleDetailAPIView(APIView):
+    permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
+    def get(self, request, pk):
+        module = Module.objects.filter(pk=pk).first()
+        if not module:
+            return error_response(message="Module not found", status_code=404)
+        if not request.user.is_authenticated and module.course.status != Course.Status.PUBLISHED:
+            return error_response(message="Module not found", status_code=404)
+        
+        self.check_object_permissions(request, module.course)
+        
+        serializer = ModuleDetailSerializer(module)
+        return success_response(message="Module detail", data=serializer.data)
 
 class LessonCreateAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -135,6 +154,21 @@ class LessonUpDelAPIView(APIView):
         lesson.delete()
         
         return success_response(message="Lesson deleted")
+    
+    
+class LessonDetailAPIView(APIView):
+    permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
+    def get(self, request, pk):
+        lesson = Lesson.objects.filter(pk=pk).first()
+        if not lesson:
+            return error_response(message="Lesson not found", status_code=404)
+        if not request.user.is_authenticated and lesson.module.course.status != Course.Status.PUBLISHED:
+            return error_response(message="Lesson not found", status_code=404)
+        
+        self.check_object_permissions(request, lesson.module.course)
+        
+        serializer = LessonDetailSerializer(lesson)
+        return success_response(message="Lesson detail", data=serializer.data)
         
     
 
