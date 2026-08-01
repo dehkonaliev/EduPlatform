@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, 
+    LessonDetailSerializer, CourseInfoSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished
@@ -132,7 +132,6 @@ class LessonCreateAPIView(APIView):
         
         return success_response(message="Lesson created", data=serializer.data, status_code=201)
            
-
 class LessonUpDelAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
     def patch(self, request, pk):
@@ -154,8 +153,7 @@ class LessonUpDelAPIView(APIView):
         lesson.delete()
         
         return success_response(message="Lesson deleted")
-    
-    
+       
 class LessonDetailAPIView(APIView):
     permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
     def get(self, request, pk):
@@ -169,7 +167,39 @@ class LessonDetailAPIView(APIView):
         
         serializer = LessonDetailSerializer(lesson)
         return success_response(message="Lesson detail", data=serializer.data)
+
+class FilteredCoursesAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
         
+        instructor = request.query_params.get('instructor')
+        category = request.query_params.get('category')
+        tag = request.query_params.get('tag')
+        level = request.query_params.get('level')
+        language = request.query_params.get('language')
+        pricing_type = request.query_params.get('pricing_type')
+        rating = request.query_params.get('rating')
+        
+        courses = Course.objects.filter(status=Course.Status.PUBLISHED)
+        
+        if instructor:
+            courses = courses.filter(instructor=instructor)
+        if category:
+            courses = courses.filter(category=category)
+        if tag:
+            courses = courses.filter(tag=tag)
+        if level:
+            courses = courses.filter(level=level)
+        if language:
+            courses = courses.filter(language=language)
+        if pricing_type:
+            courses = courses.filter(pricing_type=pricing_type)
+        if rating:
+            courses = courses.filter(average_rating__gte=rating)
+        
+        serializer = CourseInfoSerializer(courses, many=True)
+        
+        return success_response(message="Filtered courses", data=serializer.data)
     
 
 

@@ -188,7 +188,6 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             course.tags.set(tags)
         return course
 
-      
 
 class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -215,7 +214,6 @@ class ModuleCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
 
-  
 class LessonCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
@@ -323,4 +321,18 @@ class LessonDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module']
         read_only_fields = fields
         
+
+# COURSE INFO
+class CourseInfoSerializer(serializers.ModelSerializer):
+    instructor = serializers.SerializerMethodField()
+    class Meta:
+        model = Course
+        fields = ['instructor', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating']
         
+    def get_instructor(self, obj):
+        instructor = obj.instructor
+        return {
+            'id':instructor.pk,
+            'full_name': f"{instructor.first_name} {instructor.last_name}",
+            "photo": instructor.photo.url if instructor.photo else None
+        }
