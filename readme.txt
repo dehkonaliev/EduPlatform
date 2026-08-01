@@ -21,8 +21,7 @@ Overall integrity -                   ✅
 ### PROFILES
 -------------------------------------
 Profiles -                            ✅
-Profile Preferences -                 ❌
-
+--------
 
 
 ❌✅
@@ -32,23 +31,29 @@ Profile Preferences -                 ❌
 Get Course Detail -                  ✅
 Get Module Detail -                  ✅
 Get Lesson detail -                  ✅
-
-Get Courses Filtered -               ❌
-Search Courses -                     ❌
+Get Courses Filtered -               ✅
 
 
 <<< INSTRUCTORS >>>
 #1 Course CRU -                      ✅
 #2 Module CRU -                      ✅
 #3 Lesson CRU -                      ✅
-#4 Get My Courses With Filter -      ❌
+#4 Get My Courses With Filter -      ✅
 
 <<< STUDENTS >>>
-
+#1 Get Personalized feed -           ❌
+#2 Get My enrolled courses -         ❌
+#3 Get the last lesson -             ❌
 
 <<< SUPERUSER >>>
+-----------------
+
+### PAYMENTS
+-------------------------------------
 
 
+### CERTIFICATES
+-------------------------------------
 
 
 ### REVIEWS
@@ -63,12 +68,7 @@ Search Courses -                     ❌
 -------------------------------------
 
 
-### PAYMENTS
--------------------------------------
 
-
-### CERTIFICATES
--------------------------------------
 
 
 
