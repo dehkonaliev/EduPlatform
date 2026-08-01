@@ -43,13 +43,20 @@ class IsInstructorAndOwner(BasePermission):
             request.user == obj.instructor
         )
         
-class IsStudent(BasePermission):
+class IsStudentAndOwner(BasePermission):
     # Only STUDENTs can get in and see
     def has_permission(self, request, view):
         return bool(
             request.user and
             request.user.is_authenticated and
             request.user.user_role == 'STUDENT'
+        )
+        
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            request.user == obj.student
         )
     
         

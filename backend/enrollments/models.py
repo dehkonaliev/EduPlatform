@@ -18,11 +18,11 @@ class Enrollment(BaseModel):
     class Status(models.TextChoices):
         ACTIVE = 'ACTIVE', 'active'
         COMPLETED = 'COMPLETED', 'completed'
-        BOUGHT = 'BOUGHT', 'bought'
         DROPPED = 'DROPPED', 'dropped'
         DEACTIVATED = 'DEACTIVATED', 'deactivated'
         
-    status = models.CharField(max_length=15)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.ACTIVE)
+    is_bought = models.BooleanField(default=False)
     
     progress_percentage = models.DecimalField(max_length=5, max_digits=5, decimal_places=2, default=0.00)
     last_accessed_lesson = models.ForeignKey(
