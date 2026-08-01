@@ -4,7 +4,8 @@ from .models import Enrollment, LessonProgress
 from baseapp.utils import error_response, success_response
 from baseapp.permissions import IsStudentAndOwner
 from authentication.models import CustomUser
-from .serializers import EnrollmentCreateSerializer
+from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer,
+)
 
 
 class EnrollmentCreateAPIView(APIView):
@@ -25,6 +26,20 @@ class EnrollmentDropAPIView(APIView):
             return error_response(message="Enrollment not found", status_code=404)
         self.check_object_permissions(request, enrollment)
         
+        if enrollment.status not in ['ACTIVE', 'DEACTIVATED']:
+            return error_response(message="Enrollment already dropped or completed", errors={'status': enrollment.status})
+        
         enrollment.status = 'DROPPED'
         enrollment.save()
         return success_response(message="Enrollment dropped")
+    
+
+class ProgressCreateAPIView(APIView):
+    permission_classes = [IsStudentAndOwner]
+
+    def post(self, request):
+        serializer = ProgressCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Progress created", data=serializer.data)
