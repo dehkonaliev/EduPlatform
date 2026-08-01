@@ -30,8 +30,8 @@ Profile Preferences -                 ❌
 -------------------------------------
 <<< Overall get requests >>>
 Get Course Detail -                  ✅
-Get Module Detail -                  ❌
-Get Lesson detail -                  ❌
+Get Module Detail -                  ✅
+Get Lesson detail -                  ✅
 
 Get Courses Filtered -               ❌
 Search Courses -                     ❌
