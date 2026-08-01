@@ -29,8 +29,9 @@ Profiles -                            ✅
 -------------------------------------
 <<< Overall get requests >>>
 Get Course Detail -                  ✅
-Get Module Detail -                  ✅
-Get Lesson detail -                  ✅
+Get Module Detail -                  ✅      (Hidden from unenrolled STUDENTS)                ❌
+Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS)                ❌
+
 Get Courses Filtered -               ✅
 
 
@@ -48,6 +49,13 @@ Get Courses Filtered -               ✅
 <<< SUPERUSER >>>
 -----------------
 
+### ENROLLMENTS
+-------------------------------------
+<<< STUDENTS >>>
+#1 Enrol course -                    ✅
+#2 Drop Enrolled course -            ✅
+#3 Lesson Progress Create -          ✅
+
 ### PAYMENTS
 -------------------------------------
 
@@ -63,9 +71,6 @@ Get Courses Filtered -               ✅
 ### NOTIFICATIONS
 -------------------------------------
 
-
-### ENROLLMENTS
--------------------------------------
 
 
 
