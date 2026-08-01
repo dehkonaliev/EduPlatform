@@ -327,7 +327,7 @@ class CourseInfoSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['instructor', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating']
+        fields = ['id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating', 'instructor']
         
     def get_instructor(self, obj):
         instructor = obj.instructor

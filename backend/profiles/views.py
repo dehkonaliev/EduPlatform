@@ -2,7 +2,7 @@ from django.shortcuts import render
 from authentication.models import CustomUser
 from .models import StudentProfile, InstructorProfile
 from rest_framework.views import APIView
-from baseapp.permissions import IsStudentOrAdmin, IsInstructorOrAdmin
+from baseapp.permissions import IsInstructorOrAdmin
 from baseapp.utils import error_response, success_response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (StudentProfileSerializer, InstructorProfileSerializer
@@ -11,7 +11,7 @@ from .serializers import (StudentProfileSerializer, InstructorProfileSerializer
 
 
 class StudentProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsStudentOrAdmin]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         profile = StudentProfile.objects.filter(user=request.user).first()
         if not profile:

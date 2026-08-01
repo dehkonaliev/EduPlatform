@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'authentication',
     'courses',
     'profiles',
+    'enrollments',
 ]
 
 
