@@ -6,7 +6,7 @@ class StudentProfile(BaseModel):
         MALE = 'MALE', 'male'
         FEMALE = 'FEMALE', 'female'
     
-    user = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, related_name='student_profile')
+    student = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, related_name='student_profile')
     gender = models.CharField(max_length=10, choices=Genders.choices, blank=True, null=True)
     bio = models.CharField(max_length=1500, blank=True, null=True)
     is_visible = models.BooleanField(default=True)

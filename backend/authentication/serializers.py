@@ -5,6 +5,7 @@ from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 import uuid
 from profiles.models import StudentProfile, InstructorProfile
+from payments.models import StudentWallet
 import re
 from baseapp.models import MyToken
 from baseapp.utils import field_error, success_response, error_response
@@ -180,7 +181,9 @@ class ActivateUserSerializer(serializers.ModelSerializer):
             setattr(user, attr, value)
 
         if user_role == CustomUser.UserRole.STUDENT:
-            StudentProfile.objects.create(user=user)
+            StudentProfile.objects.create(student=user)
+            StudentWallet.objects.create(student=user)
+            
         elif user_role == CustomUser.UserRole.INSTRUCTOR:
             InstructorProfile.objects.create(instructor=user)
 

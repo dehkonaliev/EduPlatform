@@ -4,14 +4,14 @@ from baseapp.utils import generate_wallet_id
 from datetime import timedelta
 
 class StudentWallet(BaseModel):
-    student = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE)
+    student = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, limit_choices_to={'user_role': "STUDENT"})
     wallet_id = models.CharField(unique=True, max_length=8)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     def save(self, *args, **kwargs):
-        new_id = generate_wallet_id()
         if not self.wallet_id:
-            while StudentWallet.objects.filter(wallet_id=new_id):
+            new_id = generate_wallet_id()
+            while StudentWallet.objects.filter(wallet_id=new_id).exists():
                 new_id = generate_wallet_id()
             self.wallet_id = new_id
         return super().save(*args, **kwargs)
