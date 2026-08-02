@@ -2,9 +2,10 @@ from django.db import models
 from baseapp.models import BaseModel
 from baseapp.utils import generate_wallet_id
 from datetime import timedelta
+from django.utils import timezone
 
 class StudentWallet(BaseModel):
-    student = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, limit_choices_to={'user_role': "STUDENT"})
+    student = models.OneToOneField('authentication.CustomUser', on_delete=models.CASCADE, limit_choices_to={'user_role': "STUDENT"}, related_name='wallet')
     wallet_id = models.CharField(unique=True, max_length=8)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
@@ -29,31 +30,32 @@ class WalletTransaction(BaseModel):
     transaction_type = models.CharField(max_length=20, choices=TransactionTypes.choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     
+
+
+class Plan(BaseModel):
+    name = models.CharField(max_length=30)
+    desc = models.CharField(max_length=500)
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    period_days = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
+    
     def __str__(self):
-        return self.wallet.student
+        return self.name
     
-    
-class Subscriptions(BaseModel):
-    class Periods(models.TextChoices):
-        ONE_MONTH = 'ONE_MONTH', 'one_month'
-        THREE_MONTH = 'THREE_MONTH', 'three_month'
-        SIX_MONTH = 'SIX_MONTH', 'six_month'
-        A_YEAR = 'A_YEAR', 'a_year'
-    
-    student = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE)
-    subscription_period = models.CharField(max_length=20, choices=Periods.choices)
+class Subscription(BaseModel):    
+    student = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='subscriptions')
+    subscription_plan = models.ForeignKey(Plan, on_delete=models.PROTECT)
     expires_at = models.DateTimeField()
     
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            if self.subscription_period == self.Periods.ONE_MONTH:
-                expiry_date = self.created_at + timedelta(days=30)
-            elif self.subscription_period == self.Periods.THREE_MONTH:
-                expiry_date = self.created_at + timedelta(days=90)
-            elif self.subscription_period == self.Periods.SIX_MONTH:
-                expiry_date = self.created_at + timedelta(days=180)
-            elif self.subscription_period == self.Periods.A_YEAR:
-                expiry_date = self.created_at + timedelta(days=365)
+            days = self.subscription_plan.period_days
+            expiry_date = timezone.now() + timedelta(days=days)
         self.expires_at = expiry_date
         return super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        return self.expires_at > timezone.now()
+    
+    
     

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from baseapp.utils import field_error, validate_wallet_id
-from .models import Subscriptions, WalletTransaction, StudentWallet
+from .models import Subscription, WalletTransaction, StudentWallet, Plan
 from decimal import Decimal
 from django.db.models import F
 
@@ -29,6 +29,47 @@ class ReplenishWalletSerializer(serializers.Serializer):
         wallet.balance = wallet.balance + amount
         wallet.save()
         return 
+
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plan
+        fields = ['id', 'name', 'period_days']  
+        read_only_fields = fields
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['id', 'subscription_plan', 'created_at', 'expires_at']
+        read_only_fields = ['id', 'created_at', 'expires_at']
+        
+    def validate_subscription_plan(self, plan):
+        if not plan:
+            return field_error('subscription_plan', "Subscription plan must be given")
+        if not plan.is_active:
+            return field_error("subscription_plan", "invalid plan")
+        if plan not in Plan.objects.all():
+            return field_error("subscription_plan", "Subscription plan not found")
+        
+        student = self.context.get('request').user
+        if student.wallet.balance < plan.price:
+            return field_error("non_field_error", "Not enough balance")
+        
+        return plan
+    
+        
+    def save(self, **kwargs):
+        user = self.context.get('request').user
+        plan = self.validated_data.get('subscription_plan')
+        subscription = Subscription.objects.create(student=user, subscription_plan=plan)
+        wallet = user.wallet
+        price = subscription.subscription_plan.price
+        wallet.balance = wallet.balance - price
+        wallet.save()
+        WalletTransaction.objects.create(wallet=wallet, amount=price, transaction_type="SUBSCRIPTION")
+        return subscription
+        
+        
+   
         
         
     
