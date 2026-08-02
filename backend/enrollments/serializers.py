@@ -69,7 +69,7 @@ class ProgressCreateSerializer(serializers.ModelSerializer):
         if lesson_index > 0:
             previous_lesson_id = course_lessons[lesson_index - 1]
             completed_previous = enrollment.lessons_progress.filter(
-                is_complete=True, lesson_id=previous_lesson_id
+                is_completed=True, lesson_id=previous_lesson_id
             ).exists()
             if not completed_previous:
                 raise serializers.ValidationError(
@@ -80,5 +80,5 @@ class ProgressCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return LessonProgress.objects.create(**validated_data)
-        
-            
+
+         
