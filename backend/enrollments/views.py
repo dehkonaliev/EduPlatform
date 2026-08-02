@@ -4,9 +4,9 @@ from .models import Enrollment, LessonProgress
 from courses.models import Lesson
 from baseapp.utils import error_response, success_response
 from baseapp.permissions import IsStudentAndOwner
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from authentication.models import CustomUser
-from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer,
+from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer, LastLessonSerializer
 )
 
 
@@ -19,6 +19,7 @@ class EnrollmentCreateAPIView(APIView):
         serializer.save()
         
         return success_response(message="Enrollment created", data=serializer.data, status_code=201)
+ 
     
 class EnrollmentDropAPIView(APIView):
     permission_classes = [IsStudentAndOwner]
@@ -34,7 +35,6 @@ class EnrollmentDropAPIView(APIView):
         enrollment.status = 'DROPPED'
         enrollment.save()
         return success_response(message="Enrollment dropped")
-    
 
 
 class CompleteLessonAPIView(APIView):
@@ -79,12 +79,15 @@ class CompleteLessonAPIView(APIView):
                 "course_completed": next_progress is None,
             },
         )
+ 
         
-class ProgressGetAPIView(APIView):
-    permission_classes = [AllowAny]
+class LastLessonAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsStudentAndOwner]
     def get(self, request):
-        progress = LessonProgress.objects.all()
-        return success_response(message="Progress", data = list(LessonProgress.objects.values_list('pk', flat=True)))
-    
+        user = request.user
+        last_lesson = LessonProgress.objects.filter(enrollment__student=user).order_by('-created_at').first()
+        serializer = LastLessonSerializer(last_lesson)
+        
+        return success_response(message="Last lesson taken", data=serializer.data)
         
         

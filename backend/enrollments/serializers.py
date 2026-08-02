@@ -47,6 +47,9 @@ class ProgressCreateSerializer(serializers.ModelSerializer):
         student = self.context.get('request').user
         if enrollment.student != student:
             raise serializers.ValidationError({"enrollment": "Enrollment not found"})
+        
+        if enrollment.status != "ACTIVE":
+            raise serializers.ValidationError({"enrollment": "Enrollment is not ACTIVE"})
 
         return enrollment
 
@@ -80,5 +83,18 @@ class ProgressCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return LessonProgress.objects.create(**validated_data)
+    
+
+    
+class LastLessonSerializer(serializers.ModelSerializer):
+    lesson = serializers.SerializerMethodField()
+    class Meta:
+        model = LessonProgress
+        fields = ['id', 'lesson']
+        read_only_fields = fields
+        
+    def get_lesson(self, obj):
+        obj = obj.lesson
+        return {"id": obj.pk, "title": obj.title, "module": obj.module.title}
 
          
