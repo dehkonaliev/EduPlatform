@@ -1,3 +1,18 @@
+### PAYMENTS
+-------------------------------------
+<<< STUDENTS >>>
+Replenish wallet -                   ❌
+Subscribe -                          ❌
+Unsubscribe -                        ❌
+Buy course -                         ❌
+
+Transactions -                       ❌
+Subscriptions -                      ❌2
+
+<<< INSTRUCTORS >>>
+-------------------
+
+
 ### PROFILES
 -------------------------------------
 Profiles -                            ✅
@@ -36,9 +51,6 @@ Get Courses Filtered -               ✅
 #1 Enrol course -                    ✅   (Set a payment boudary)                            ❌
 #2 Drop Enrolled course -            ✅
 #3 Lesson Progress Create -          ✅
-
-### PAYMENTS
--------------------------------------
 
 
 ### CERTIFICATES
