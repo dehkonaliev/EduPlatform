@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Enrollment, LessonProgress
 from baseapp.utils import field_error
 from courses.models import Lesson
+from courses.serializers import CourseMinimalSerializer
 
 
 class EnrollmentCreateSerializer(serializers.ModelSerializer):
@@ -97,4 +98,10 @@ class LastLessonSerializer(serializers.ModelSerializer):
         obj = obj.lesson
         return {"id": obj.pk, "title": obj.title, "module": obj.module.title}
 
-         
+
+class EnrolledCourseSerializer(serializers.ModelSerializer):
+    course = CourseMinimalSerializer()
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'course', 'is_bought', 'progress_percentage', 'last_accessed_lesson', 'last_accessed_at', 'enrolled_at', 'completed_at']
+        read_only_fields = fields

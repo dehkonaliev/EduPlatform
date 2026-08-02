@@ -6,12 +6,13 @@ from baseapp.utils import error_response, success_response
 from baseapp.permissions import IsStudentAndOwner
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import CustomUser
-from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer, LastLessonSerializer
+from django.db.models import Q
+from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer, LastLessonSerializer, EnrolledCourseSerializer
 )
 
 
 class EnrollmentCreateAPIView(APIView):
-    permission_classes = [IsStudentAndOwner]
+    permission_classes = [IsAuthenticated, IsStudentAndOwner]
     
     def post(self, request):
         serializer = EnrollmentCreateSerializer(data=request.data, context={'request':request})
@@ -22,7 +23,7 @@ class EnrollmentCreateAPIView(APIView):
  
     
 class EnrollmentDropAPIView(APIView):
-    permission_classes = [IsStudentAndOwner]
+    permission_classes = [IsAuthenticated, IsStudentAndOwner]
     def patch(self, request, pk):
         enrollment = Enrollment.objects.filter(pk=pk).first()
         if not enrollment:
@@ -89,5 +90,14 @@ class LastLessonAPIView(APIView):
         serializer = LastLessonSerializer(last_lesson)
         
         return success_response(message="Last lesson taken", data=serializer.data)
+    
+class MyEnrollmentsAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsStudentAndOwner]
+    def get(self, request):
+        user = request.user
+        enrollments = user.enrollments.filter(Q(status="ACTIVE") | Q(status="COMPELTED"))
+        serializer = EnrolledCourseSerializer(enrollments, many=True)
+        
+        return success_response(message="Enrolled courses", data=serializer.data)
         
         
