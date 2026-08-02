@@ -1,23 +1,3 @@
-### AUTHENTICATION
--------------------------------------
-Activation Process -                  ✅
-Login -                               ✅
-Logout -                              ✅
-Delete Account -                      ✅
-Send Email verification -             ✅
-Send Telegram Verification Code -     ✅
-Profile Update -                      ✅
-Password Change -                     ✅
-Password Reset -                      ✅
-Verify Email -                        ✅
-Verify Phone -                        ✅
-EMAIL Changing Process Safety -       ✅
-ACTIVATION safety -                   ✅
-TOKEN_REFRESH -                       ✅
-Overall integrity -                   ✅
-
-14/14
-
 ### PROFILES
 -------------------------------------
 Profiles -                            ✅
@@ -43,8 +23,8 @@ Get Courses Filtered -               ✅
 
 <<< STUDENTS >>>
 #1 Get Personalized feed -           ❌
-#2 Get My enrolled courses -         ❌
-#3 Get the last lesson -             ❌
+#2 Get My enrolled courses -         ✅
+#3 Get the last lesson -             ✅
 
 <<< SUPERUSER >>>
 -----------------
@@ -52,7 +32,7 @@ Get Courses Filtered -               ✅
 ### ENROLLMENTS
 -------------------------------------
 <<< STUDENTS >>>
-#1 Enrol course -                    ✅
+#1 Enrol course -                    ✅   (Set a boudary)                                    ❌
 #2 Drop Enrolled course -            ✅
 #3 Lesson Progress Create -          ✅
 
@@ -70,6 +50,27 @@ Get Courses Filtered -               ✅
 
 ### NOTIFICATIONS
 -------------------------------------
+
+
+### AUTHENTICATION
+-------------------------------------
+Activation Process -                  ✅
+Login -                               ✅
+Logout -                              ✅
+Delete Account -                      ✅
+Send Email verification -             ✅
+Send Telegram Verification Code -     ✅
+Profile Update -                      ✅
+Password Change -                     ✅
+Password Reset -                      ✅
+Verify Email -                        ✅
+Verify Phone -                        ✅
+EMAIL Changing Process Safety -       ✅
+ACTIVATION safety -                   ✅
+TOKEN_REFRESH -                       ✅
+Overall integrity -                   ✅
+
+14/14
 
 
 
