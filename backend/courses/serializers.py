@@ -384,6 +384,23 @@ class QuizSerializer(serializers.ModelSerializer):
             return field_error("lesson", "Quiz already exists for this lesson")
         
         return lesson
+
+class UpQuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ['id', 'title']
+        read_only_fields = ['id']
+        required_fields = ['title']
+        
+    def validate_title(self, title):
+        if not title:
+            return field_error("title", 'Title is required')
+        title = title.strip()
+        
+        if len(title) > 1000:
+            return field_error("title", "Title cannot exceed 1000 characters long")
+        
+        return title
     
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
