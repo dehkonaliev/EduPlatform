@@ -7,6 +7,7 @@ from baseapp.permissions import IsStudentAndOwner
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import CustomUser
 from django.db.models import Q
+from django.utils import timezone
 from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer, LastLessonSerializer, EnrolledCourseSerializer
 )
 
@@ -17,6 +18,8 @@ class EnrollmentCreateAPIView(APIView):
     def post(self, request):
         serializer = EnrollmentCreateSerializer(data=request.data, context={'request':request})
         serializer.is_valid(raise_exception=True)
+        if not request.user.subscriptions.filter(expires_at__gte=timezone.now()).exists():
+            return error_response(message="You have no valid subscription", status_code=404)
         serializer.save()
         
         return success_response(message="Enrollment created", data=serializer.data, status_code=201)
@@ -99,5 +102,4 @@ class MyEnrollmentsAPIView(APIView):
         serializer = EnrolledCourseSerializer(enrollments, many=True)
         
         return success_response(message="Enrolled courses", data=serializer.data)
-        
         
