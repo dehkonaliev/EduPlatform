@@ -6,7 +6,7 @@ from django.db.models import Q
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer
+    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer, QuizeeSerializer, QuestionSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
@@ -277,6 +277,24 @@ class FilteredCoursesInstructorAPIView(APIView):
         return success_response(message="Filtered instructor courses", data=serializer.data)
     
 
+class CreateQuizAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def post(self, request):
+        serializer = QuizeeSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Quiz created", data=serializer.data, status_code=201)
+    
+        
+class CreateQuestionAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def post(self, request):
+        serializer = QuestionSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Question created", data=serializer.data, status_code=201)       
 
 
 

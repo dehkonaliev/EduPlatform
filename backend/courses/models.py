@@ -126,9 +126,9 @@ class Lesson(BaseModel):
         return f"{self.module.title} {self.title}"
         
 
-class Quizee(BaseModel):
+class Quiz(BaseModel):
     title = models.CharField(max_length=1000)
-    lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE)
+    lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE, related_name='quiz')
     
     def __str__(self):
         return self.title
@@ -139,11 +139,11 @@ class Question(BaseModel):
         CHECKBOX = 'CHECKBOX', 'checkbox'
         TEXT = 'TEXT', 'text'
         
-    quizee = models.ForeignKey(Quizee, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question = models.CharField(max_length=2000)
     question_type = models.CharField(max_length=15, choices=QuestionTypes.choices)
     
-class QuizeeOption(BaseModel):
+class QuizOption(BaseModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     option = models.CharField(max_length=2000)
     is_correct = models.BooleanField()
