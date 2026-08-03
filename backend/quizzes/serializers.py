@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Quiz, QuizOption, Question
+from .models import Quiz, QuizOption, Question, QuizAttempt, QuestionResponse
 from baseapp.utils import field_error
 
 
@@ -128,5 +128,96 @@ class GetQuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         fields = ['id', 'title', 'lesson', 'questions']
+        read_only_fields = fields
+        
+        
+class QuestionResponseWriteSerializer(serializers.ModelSerializer):
+    selected_options = serializers.PrimaryKeyRelatedField(
+        queryset=QuizOption.objects.all(), many=True, required=False
+    )
+
+    class Meta:
+        model = QuestionResponse
+        fields = ['question', 'text_answer', 'selected_options']
+
+    def validate(self, attrs):
+        question = attrs.get('question')
+        q_type = question.question_type
+        selected_options = attrs.get('selected_options', [])
+        text_answer = attrs.get('text_answer')
+
+        if q_type == Question.QuestionTypes.TEXT:
+            if not text_answer:
+                raise serializers.ValidationError({'text_answer': 'This field is required for text questions.'})
+        else:
+            if not selected_options:
+                raise serializers.ValidationError({'selected_options': 'At least one option must be selected.'})
+            if q_type == Question.QuestionTypes.RADIO and len(selected_options) > 1:
+                raise serializers.ValidationError({'selected_options': 'Only one option allowed for radio questions.'})
+            invalid = [o for o in selected_options if o.question_id != question.id]
+            if invalid:
+                raise serializers.ValidationError({'selected_options': 'Options must belong to the given question.'})
+
+        return attrs
+
+
+class QuizAttemptCreateSerializer(serializers.ModelSerializer):
+    responses = QuestionResponseWriteSerializer(many=True)
+
+    class Meta:
+        model = QuizAttempt
+        fields = ['id', 'quiz', 'responses']
+        read_only_fields = ['id']
+
+    def validate(self, attrs):
+        quiz = attrs['quiz']
+        responses = attrs['responses']
+
+        quiz_question_ids = set(quiz.questions.values_list('id', flat=True))
+        answered_ids = {r['question'].id for r in responses}
+
+        # every question in the payload must belong to this quiz
+        stray = answered_ids - quiz_question_ids
+        if stray:
+            raise serializers.ValidationError({'responses': f'Questions {stray} do not belong to this quiz.'})
+
+        # optional: require every question be answered
+        missing = quiz_question_ids - answered_ids
+        if missing:
+            raise serializers.ValidationError({'responses': f'Missing answers for questions {missing}.'})
+
+        return attrs
+
+    def create(self, validated_data):
+        responses_data = validated_data.pop('responses')
+        student = self.context['request'].user
+
+        attempt = QuizAttempt.objects.create(student=student, **validated_data)
+
+        response_objs = []
+        for r in responses_data:
+            selected = r.pop('selected_options', [])
+            response = QuestionResponse.objects.create(attempt=attempt, **r)
+            if selected:
+                response.selected_options.set(selected)
+            response_objs.append(response)
+
+        return attempt
+    
+class QuestionResponseReadSerializer(serializers.ModelSerializer):
+    selected_options = OptionMiniSerializer(many=True)
+
+    class Meta:
+        model = QuestionResponse
+        fields = ['id', 'question', 'text_answer', 'selected_options']
+        read_only_fields = fields
+
+
+class QuizAttemptReadSerializer(serializers.ModelSerializer):
+    responses = QuestionResponseReadSerializer(many=True)
+
+    class Meta:
+        model = QuizAttempt
+        fields = ['id', 'quiz', 'student', 'score', 'submitted_at', 'responses']
         read_only_fields = fields
     
