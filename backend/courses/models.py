@@ -61,7 +61,7 @@ class Course(BaseModel):
         MONTHLY = 'MONTHLY', 'monthly'
         SPECIAL = 'SPECIAL', 'special'
     pricing_type = models.CharField(max_length=10, choices=PricingType.choices, default=PricingType.MONTHLY)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     class Status(models.TextChoices):
         DRAFT = 'DRAFT', 'Draft'

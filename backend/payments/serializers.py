@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from baseapp.utils import field_error, validate_wallet_id
 from .models import Subscription, WalletTransaction, StudentWallet, Plan
+from enrollments.models import Enrollment
 from decimal import Decimal
 from django.db.models import F
 
@@ -69,7 +70,40 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return subscription
         
         
-   
+class BuyCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'course']
+        read_only_fields = ['id']
+        
+    def validate_course(self, course):
+        if not course:
+            return field_error("course", "Course must be set")
+        if course.status != "PUBLISHED":
+            return field_error("course", "Course status is not published")
+        if course.pricing_type == 'FREE':
+            return field_error("course", "Course status is free")
+        student = self.context.get('request').user
+        if student.wallet.balance < course.price:
+            return field_error("course", "You have insufficient funds to buy this course")
+        
+        return course
+    
+    def save(self, **kwargs):
+        course = self.validated_data.get('course')
+        student = self.context.get('request').user
+        existing_enrollment = student.enrollments.filter(course=course).first()
+        if existing_enrollment and existing_enrollment.is_bought == True:
+            return field_error("course", "Course is already bought")
+        if existing_enrollment:
+            enrollment.is_bought=True
+            enrollment.save()
+        wallet = student.wallet
+        wallet.balance = wallet.balance - course.price
+        wallet.save()
+        WalletTransaction.objects.create(wallet=wallet, amount=course.price, transaction_type=WalletTransaction.TransactionTypes.PAID_COURSE)
+        enrollment = Enrollment.objects.create(student=student, course=course, is_bought=True)
+        return enrollment
         
         
     
