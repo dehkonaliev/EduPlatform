@@ -319,6 +319,17 @@ class CreateQuestionAPIView(APIView):
         
         return success_response(message="Question created", data=serializer.data, status_code=201)
     
+class DeleteQuestionAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def delete(self, request, pk):
+        question = Question.objects.filter(pk=pk).first()
+        if not question:
+            return error_response(message="Question not found", status_code=404)
+        self.check_object_permissions(request, question.quiz.lesson.module.course)
+        question.delete()
+        
+        return success_response(message="Question deleted")
+    
 class CreateOptionAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
     def post(self, request):
