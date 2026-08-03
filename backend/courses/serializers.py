@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from baseapp.utils import field_error
-from .models import Course, Category, Module, Lesson, Tag
+from .models import Course, Category, Module, Lesson, Tag, Quizee, QuizeeOption, Question
 from django.utils.text import slugify
 from baseapp.utils import field_error
 
@@ -356,3 +356,11 @@ class CourseInfoSerializer(serializers.ModelSerializer):
             'full_name': f"{instructor.first_name} {instructor.last_name}",
             "photo": instructor.photo.url if instructor.photo else None
         }
+        
+class QuizeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quizee
+        fields = ['id', 'title', 'lesson']
+        read_only_fields = ['id']
+        
+    
