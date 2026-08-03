@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from .models import Enrollment, LessonProgress
 from courses.models import Lesson
-from baseapp.utils import error_response, success_response
+from baseapp.utils import error_response, success_response, XP_QUANTITY
 from baseapp.permissions import IsStudentAndOwner
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import CustomUser
@@ -74,6 +74,10 @@ class CompleteLessonAPIView(APIView):
                 enrollment=enrollment,
                 lesson_id=next_lesson_id,
             )
+            
+        student_profile = request.user.student_profile
+        student_profile.xp = student_profile.xp + 5 + student_profile.level * 2
+        student_profile.save()
 
         return success_response(
             message="Progress updated",

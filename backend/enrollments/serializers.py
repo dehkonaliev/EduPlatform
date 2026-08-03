@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import Enrollment, LessonProgress
-from baseapp.utils import field_error
+from baseapp.utils import field_error, XP_QUANTITY
 from courses.models import Lesson
 from courses.serializers import CourseMinimalSerializer
+from profiles.models import StudentProfile
 
 
 class EnrollmentCreateSerializer(serializers.ModelSerializer):
@@ -38,26 +39,20 @@ class EnrollmentCreateSerializer(serializers.ModelSerializer):
 class ProgressCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonProgress
-        fields = ['id', 'enrollment', 'lesson']
+        fields = ['id', 'lesson']
         read_only_fields = ['id']
 
-    def validate_enrollment(self, enrollment):
-        if enrollment.course.status != "PUBLISHED":
-            raise serializers.ValidationError({"enrollment": "Enrollment not found"})
 
+    def validate(self, data):
         student = self.context.get('request').user
-        if enrollment.student != student:
-            raise serializers.ValidationError({"enrollment": "Enrollment not found"})
+        lesson = data.get('lesson')
+        enrollment = student.enrollments.filter(lesson=lesson).first()
+        if not enrollment:
+            return field_error("lesson", "Enrollment for this lesson not found")
         
         if enrollment.status != "ACTIVE":
             raise serializers.ValidationError({"enrollment": "Enrollment is not ACTIVE"})
-
-        return enrollment
-
-    def validate(self, data):
-        enrollment = data['enrollment']
-        lesson = data['lesson']
-
+                
         if lesson.module.course_id != enrollment.course_id:
             raise serializers.ValidationError(
                 {"lesson": "Lesson does not belong to the enrolled course"}
@@ -76,14 +71,9 @@ class ProgressCreateSerializer(serializers.ModelSerializer):
                 is_completed=True, lesson_id=previous_lesson_id
             ).exists()
             if not completed_previous:
-                raise serializers.ValidationError(
-                    {"lesson": "You must complete the previous lesson first"}
-                )
+                return field_error("lesson", "You must complete the previous lesson first")
 
         return data
-
-    def create(self, validated_data):
-        return LessonProgress.objects.create(**validated_data)
     
 
     

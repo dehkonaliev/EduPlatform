@@ -39,3 +39,5 @@ def field_error(field, message):
     raise serializers.ValidationError({
         field: message
     })
+    
+XP_QUANTITY = 5

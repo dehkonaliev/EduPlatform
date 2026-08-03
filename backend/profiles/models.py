@@ -12,6 +12,7 @@ class StudentProfile(BaseModel):
     is_visible = models.BooleanField(default=True)
     xp = models.PositiveIntegerField(default=0)
     streak = models.PositiveIntegerField(default=0)
+    level = models.PositiveIntegerField(default=1)
     
     total_courses_enrolled = models.PositiveIntegerField(default=0)
     total_courses_completed = models.PositiveIntegerField(default=0)
