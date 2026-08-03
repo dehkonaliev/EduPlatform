@@ -1,8 +1,7 @@
 from django.urls import path
 from .views import (CourseCreateAPIView, CategoryAPIView, TagAPIView, CourseUpDelAPIView, ModuleCreateAPIView, ModuleUpdateDeleteAPIView,
     LessonCreateAPIView, LessonUpDelAPIView, CourseDetailAPIView, ModuleDetailAPIView, LessonDetailAPIView, FilteredCoursesAPIView,
-    FilteredCoursesInstructorAPIView, CreateQuizAPIView, CreateQuestionAPIView, CreateOptionAPIView, UpDelQuizAPIView, DeleteQuestionAPIView,
-    
+    FilteredCoursesInstructorAPIView
 )
 
 
@@ -29,15 +28,4 @@ urlpatterns = [
     path('lesson-create', LessonCreateAPIView.as_view()),
     path('lesson-update-delete/<uuid:pk>', LessonUpDelAPIView.as_view()),
     path('lesson-detail/<uuid:pk>', LessonDetailAPIView.as_view()),
-    
-    #QUIZZES
-    path('create-quiz', CreateQuizAPIView.as_view()),
-    path('update-delete-quiz/<uuid:pk>', UpDelQuizAPIView.as_view()),
-    
-    #QUESTION
-    path('create-question', CreateQuestionAPIView.as_view()),
-    path('delete-question/<uuid:pk>', DeleteQuestionAPIView.as_view()),
-    
-    #OPTIONS
-    path('create-option', CreateOptionAPIView.as_view())
 ]

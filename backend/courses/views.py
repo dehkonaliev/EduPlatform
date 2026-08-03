@@ -3,12 +3,10 @@ from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
-from .models import QuizOption, Quiz, Question
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer, QuizSerializer, QuestionSerializer,
-    OptionSerializer, UpQuizSerializer
+    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
@@ -278,70 +276,6 @@ class FilteredCoursesInstructorAPIView(APIView):
         
         return success_response(message="Filtered instructor courses", data=serializer.data)
     
-
-class CreateQuizAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def post(self, request):
-        serializer = QuizSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return success_response(message="Quiz created", data=serializer.data, status_code=201)
-
-class UpDelQuizAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def patch(self, request, pk):
-        quiz = Quiz.objects.filter(pk=pk).first()
-        if not quiz:
-            return error_response(message="Quiz not found", status_code=404)
-        self.check_object_permissions(request, quiz.lesson.module.course)
-        serializer = UpQuizSerializer(instance=quiz, data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return success_response(message="Quiz updated", data=serializer.data)
-    
-    def delete(self, request, pk):
-        quiz = Quiz.objects.filter(pk=pk).first()
-        if not quiz:
-            return error_response(message="Quiz not found", status_code=404)
-        self.check_object_permissions(request, quiz.lesson.module.course)
-        quiz.delete()
-        
-        return success_response(message="Quiz deleted")
-
-class CreateQuestionAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def post(self, request):
-        serializer = QuestionSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return success_response(message="Question created", data=serializer.data, status_code=201)
-    
-class DeleteQuestionAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def delete(self, request, pk):
-        question = Question.objects.filter(pk=pk).first()
-        if not question:
-            return error_response(message="Question not found", status_code=404)
-        self.check_object_permissions(request, question.quiz.lesson.module.course)
-        question.delete()
-        
-        return success_response(message="Question deleted")
-    
-class CreateOptionAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
-    def post(self, request):
-        serializer = OptionSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return success_response(message="Option created", data=serializer.data, status_code=201)          
-
-
-
-
 
      
   

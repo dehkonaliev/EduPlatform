@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'profiles',
     'enrollments',
     'payments',
+    'quizzes'
 ]
 
 

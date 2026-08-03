@@ -124,28 +124,6 @@ class Lesson(BaseModel):
         
     def __str__(self):
         return f"{self.module.title} {self.title}"
-        
 
-class Quiz(BaseModel):
-    title = models.CharField(max_length=1000)
-    lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE, related_name='quiz')
-    
-    def __str__(self):
-        return self.title
-    
-class Question(BaseModel):
-    class QuestionTypes(models.TextChoices):
-        RADIO = 'RADIO', 'radio'
-        CHECKBOX = 'CHECKBOX', 'checkbox'
-        TEXT = 'TEXT', 'text'
-        
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    question = models.CharField(max_length=2000)
-    question_type = models.CharField(max_length=15, choices=QuestionTypes.choices)
-    
-class QuizOption(BaseModel):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    option = models.CharField(max_length=2000)
-    is_correct = models.BooleanField(default=False)
     
     
