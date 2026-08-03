@@ -10,6 +10,8 @@ class StudentProfile(BaseModel):
     gender = models.CharField(max_length=10, choices=Genders.choices, blank=True, null=True)
     bio = models.CharField(max_length=1500, blank=True, null=True)
     is_visible = models.BooleanField(default=True)
+    xp = models.PositiveIntegerField(default=0)
+    streak = models.PositiveIntegerField(default=0)
     
     total_courses_enrolled = models.PositiveIntegerField(default=0)
     total_courses_completed = models.PositiveIntegerField(default=0)

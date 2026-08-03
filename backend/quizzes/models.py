@@ -29,12 +29,9 @@ class QuizOption(BaseModel):
     
 class QuizAttempt(BaseModel):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='attempts')
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quiz_attempts')
-    score = models.PositiveIntegerField(default=0)
+    student = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='quiz_attempts')
+    score = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # e.g. 83.33
     submitted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('quiz', 'student')  # remove if retakes are allowed
 
 
 class QuestionResponse(BaseModel):
