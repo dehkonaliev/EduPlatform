@@ -313,6 +313,26 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
         
+class CourseDetailForStuSerializer(serializers.ModelSerializer):
+    modules = ModuleMinimalSerializer(many=True, read_only=True)
+    is_enrolled = serializers.SerializerMethodField()
+    class Meta:
+        model = Course
+        fields = [
+            'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
+            'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
+            'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
+            'total_reviews', 'requirements', 'what_included', 'modules', 'is_enrolled'
+        ]
+        read_only_fields = fields
+        
+    def get_is_enrolled(self, obj):
+        student = self.context.get('request').user
+        enrollment = student.enrollments.filter(course=obj, status="ACTIVE").first()
+        if enrollment:
+            return True
+        return False
+        
 # LESSON DETAIL
 class LessonDetailSerializer(serializers.ModelSerializer):
     module = ModuleMinimalSerializer(read_only=True)

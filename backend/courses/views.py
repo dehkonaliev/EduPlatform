@@ -1,15 +1,15 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer
+    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
-    IsAdminOrOwnerOrReadOnlyPublished
+    IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
 )
 
 
@@ -69,6 +69,8 @@ class CourseDetailAPIView(APIView):
         self.check_object_permissions(request, course)
         
         serializer = CourseDetailSerializer(course)
+        if request.user.is_authenticated and request.user.user_role == "STUDENT":
+            serializer = CourseDetailForStuSerializer(course, context={'request': request})
         return success_response(message="Course detail", data=serializer.data)
 
 
@@ -110,6 +112,7 @@ class ModuleUpdateDeleteAPIView(APIView):
         
         return success_response(message="Module deleted")
 
+
 class ModuleDetailAPIView(APIView):
     permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
     def get(self, request, pk):
@@ -124,6 +127,7 @@ class ModuleDetailAPIView(APIView):
         serializer = ModuleDetailSerializer(module)
         return success_response(message="Module detail", data=serializer.data)
 
+
 class LessonCreateAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
     def post(self, request):
@@ -132,6 +136,7 @@ class LessonCreateAPIView(APIView):
         serializer.save()
         
         return success_response(message="Lesson created", data=serializer.data, status_code=201)
+          
            
 class LessonUpDelAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -155,6 +160,7 @@ class LessonUpDelAPIView(APIView):
         
         return success_response(message="Lesson deleted")
        
+       
 class LessonDetailAPIView(APIView):
     permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
     def get(self, request, pk):
@@ -168,6 +174,7 @@ class LessonDetailAPIView(APIView):
         
         serializer = LessonDetailSerializer(lesson)
         return success_response(message="Lesson detail", data=serializer.data)
+
 
 class FilteredCoursesAPIView(APIView):
     permission_classes = [AllowAny]
@@ -216,6 +223,7 @@ class FilteredCoursesAPIView(APIView):
         serializer = CourseInfoSerializer(courses, many=True)
         
         return success_response(message="Filtered courses", data=serializer.data)
+    
     
 class FilteredCoursesInstructorAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
@@ -272,7 +280,7 @@ class FilteredCoursesInstructorAPIView(APIView):
 
 
      
-    
+  
 class CategoryAPIView(APIView):
     permission_classes = [IsAdminOrReadOnly]
     def post(self, request):

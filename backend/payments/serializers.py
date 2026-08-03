@@ -29,7 +29,8 @@ class ReplenishWalletSerializer(serializers.Serializer):
         wallet = StudentWallet.objects.filter(wallet_id=wallet_id).first()
         wallet.balance = wallet.balance + amount
         wallet.save()
-        return 
+        WalletTransaction.objects.create(wallet=wallet, amount=amount, transaction_type="REPLENISH")
+        return wallet
 
 class PlanSerializer(serializers.ModelSerializer):
     class Meta:
