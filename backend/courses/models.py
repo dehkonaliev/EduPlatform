@@ -146,6 +146,6 @@ class Question(BaseModel):
 class QuizOption(BaseModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     option = models.CharField(max_length=2000)
-    is_correct = models.BooleanField()
+    is_correct = models.BooleanField(default=False)
     
     

@@ -6,7 +6,8 @@ from django.db.models import Q
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer, QuizeeSerializer, QuestionSerializer
+    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer, QuizSerializer, QuestionSerializer,
+    OptionSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
@@ -280,7 +281,7 @@ class FilteredCoursesInstructorAPIView(APIView):
 class CreateQuizAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
     def post(self, request):
-        serializer = QuizeeSerializer(data=request.data, context={"request": request})
+        serializer = QuizSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
@@ -294,7 +295,16 @@ class CreateQuestionAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return success_response(message="Question created", data=serializer.data, status_code=201)       
+        return success_response(message="Question created", data=serializer.data, status_code=201)
+    
+class CreateOptionAPIView(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def post(self, request):
+        serializer = OptionSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return success_response(message="Option created", data=serializer.data, status_code=201)          
 
 
 
