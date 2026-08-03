@@ -162,8 +162,9 @@ class LessonUpDelAPIView(APIView):
        
        
 class LessonDetailAPIView(APIView):
-    permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
+    permission_classes = [IsAuthenticated, IsAdminOrOwnerOrReadOnlyPublished]
     def get(self, request, pk):
+        user = request.user
         lesson = Lesson.objects.filter(pk=pk).first()
         if not lesson:
             return error_response(message="Lesson not found", status_code=404)
@@ -171,6 +172,8 @@ class LessonDetailAPIView(APIView):
             return error_response(message="Lesson not found", status_code=404)
         
         self.check_object_permissions(request, lesson.module.course)
+        if user.user_role == "STUDENT" and not user.enrollments.filter(course=lesson.module.course, status="ACTIVE").exists() and not lesson.is_preview:
+            return error_response(message="You have no active enrollment for this courses")
         
         serializer = LessonDetailSerializer(lesson)
         return success_response(message="Lesson detail", data=serializer.data)

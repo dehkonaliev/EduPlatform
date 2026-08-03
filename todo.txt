@@ -1,13 +1,12 @@
 ### PAYMENTS
 -------------------------------------
 <<< STUDENTS >>>
-Replenish wallet -                   ❌
-Subscribe -                          ❌
-Unsubscribe -                        ❌
-Buy course -                         ❌
+Replenish wallet -                   ✅  Shift to SUPERUSER                                  ❌
+Subscribe -                          ✅
+Buy course -                         ✅
 
-Transactions -                       ❌
-Subscriptions -                      ❌2
+Transactions -                       ✅
+Subscriptions -                      ✅
 
 <<< INSTRUCTORS >>>
 -------------------
@@ -24,8 +23,8 @@ Profiles -                            ✅
 -------------------------------------
 <<< Overall get requests >>>
 Get Course Detail -                  ✅
-Get Module Detail -                  ✅      (Hidden from unenrolled STUDENTS)                ❌
-Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS)                ❌
+Get Module Detail -                  ✅
+Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS)                ✅
 
 Get Courses Filtered -               ✅
 
@@ -48,7 +47,7 @@ Get Courses Filtered -               ✅
 ### ENROLLMENTS
 -------------------------------------
 <<< STUDENTS >>>
-#1 Enrol course -                    ✅   (Set a payment boudary)                            ❌
+#1 Enrol course -                    ✅   (Set a payment boudary)                            ✅
 #2 Drop Enrolled course -            ✅
 #3 Lesson Progress Create -          ✅
 
