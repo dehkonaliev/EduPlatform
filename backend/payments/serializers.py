@@ -4,6 +4,7 @@ from .models import Subscription, WalletTransaction, StudentWallet, Plan
 from enrollments.models import Enrollment
 from decimal import Decimal
 from django.db.models import F
+from notifications.models import Notification
 
 
 class ReplenishWalletSerializer(serializers.Serializer):
@@ -30,6 +31,7 @@ class ReplenishWalletSerializer(serializers.Serializer):
         wallet.balance = wallet.balance + amount
         wallet.save()
         WalletTransaction.objects.create(wallet=wallet, amount=amount, transaction_type="REPLENISH")
+        Notification.objects.create(user=wallet.student, message=f"Your balanance replenished, ${amount}", notif_type="REPLENISH")
         return wallet
 
 class PlanSerializer(serializers.ModelSerializer):

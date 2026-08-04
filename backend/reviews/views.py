@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from baseapp.utils import success_response, error_response
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer, MyReviewSerializer
 from baseapp.permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Review
@@ -54,13 +54,13 @@ class GetCourseReviewsAPIView(APIView):
         course = Course.objects.filter(pk=pk).first()
         if not course:
             return error_response(message="Course not found", status_code=404)
-        reviews = course.reviews
+        reviews = course.reviews.order_by('created_at')
         serializer = ReviewSerializer(reviews, many=True)
         return success_response(message="Reviews on course", data=serializer.data)
     
 class GetMyReviewsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        reviews = request.user.my_reviews
-        serializer = ReviewSerializer(reviews, many=True)
+        reviews = request.user.my_reviews.order_by('-created_at')
+        serializer = MyReviewSerializer(reviews, many=True)
         return success_response(message="Your reviews", data=serializer.data)

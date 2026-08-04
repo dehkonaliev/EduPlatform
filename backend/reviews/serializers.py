@@ -42,6 +42,12 @@ class CourseMinimalSerializer(serializers.ModelSerializer):
 
     
 class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'rating', 'comment']
+        read_only_fields = fields
+        
+class MyReviewSerializer(serializers.ModelSerializer):
     course = CourseMinimalSerializer()
     class Meta:
         model = Review

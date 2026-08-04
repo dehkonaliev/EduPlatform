@@ -7,9 +7,16 @@
 | Update Course Rating -               ✅
 | Add Rating to filter ser -           ✅
 | Add rating to detail ser -           ✅
-| Get Course reviews -                 ❌
-| Get my reviews -                     ❌
+| Get Course reviews -                 ✅
+| Get my reviews -                     ✅
 
+
+### NOTIFICATIONS
+-------------------------------------
+| Web notifications -                  ✅
+| Connect all parts -                  ❌
+| Email notifications -                ❌
+| Notification settings -              ❌
 
 | ### LEADERS
 | -------------------------------------
@@ -22,9 +29,9 @@
 
 ### PROFILES
 -------------------------------------
-Profiles -                           ✅
-Preference -                         ✅
-Visibility -                         ❌
+Profiles -                             ✅
+Preference -                           ✅
+Visibility -                           ✅
 --------
 
 
@@ -39,7 +46,7 @@ Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS) 
 Get Courses Filtered -               ✅
 
 QUIZZES CRUD -                       ✅
-QUIZZES SOLVE -                      ✅
+QUIZZES SOLVE -                      ❌
 
 <<< INSTRUCTORS >>>
 #1 Course CRU -                      ✅
@@ -64,10 +71,6 @@ QUIZZES SOLVE -                      ✅
 
 
 ### CERTIFICATES
--------------------------------------
-
-
-### NOTIFICATIONS
 -------------------------------------
 
 

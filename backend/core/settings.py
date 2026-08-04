@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'payments',
     'quizzes',
     'reviews',
+    'notifications',
 ]
 
 
