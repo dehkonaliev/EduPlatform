@@ -74,6 +74,7 @@ class Course(BaseModel):
     
     total_enrollments = models.PositiveIntegerField(default=0)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    rating_count = models.PositiveIntegerField(default=0)
     total_reviews = models.PositiveIntegerField(default=0)
     
     requirements = models.CharField(max_length=1000, blank=True, null=True)

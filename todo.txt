@@ -1,20 +1,30 @@
-### PAYMENTS
--------------------------------------
-<<< STUDENTS >>>
-Replenish wallet -                   ✅  Shift to SUPERUSER                                  ❌
-Subscribe -                          ✅
-Buy course -                         ✅
 
-Transactions -                       ✅
-Subscriptions -                      ✅
+| ### REVIEWS
+| -------------------------------------
+| Create Review -                      ✅
+| Update Review -                      ✅
+| Delete Review -                      ✅
+| Update Course Rating -               ✅
+| Add Rating to filter ser -           ✅
+| Add rating to detail ser -           ✅
+|
+|
 
-<<< INSTRUCTORS >>>
--------------------
 
+| ### LEADERS
+| -------------------------------------
+| XP given for lesson -                ✅
+| XP for QUIZZES -                     ❌
+| Streaks -                            ❌
+| levels -                             ❌
+| Friend Request -                     ❌
+| 
 
 ### PROFILES
 -------------------------------------
-Profiles -                            ✅
+Profiles -                           ✅
+Preference -                         ✅
+Visibility -                         ❌
 --------
 
 
@@ -38,8 +48,7 @@ QUIZZES SOLVE -                      ✅
 #4 Get My Courses With Filter -      ✅
 
 <<< STUDENTS >>>
-#0 Get Universal feed                ❌
-#1 Get Personalized feed -           ❌
+#1 Get Personalized feed -           ✅
 #2 Get My enrolled courses -         ✅
 #3 Get the last lesson -             ✅
 
@@ -58,35 +67,44 @@ QUIZZES SOLVE -                      ✅
 -------------------------------------
 
 
-### REVIEWS
--------------------------------------
-
-
 ### NOTIFICATIONS
 -------------------------------------
 
 
-### AUTHENTICATION
--------------------------------------
-Activation Process -                  ✅
-Login -                               ✅
-Logout -                              ✅
-Delete Account -                      ✅
-Send Email verification -             ✅
-Send Telegram Verification Code -     ✅
-Profile Update -                      ✅
-Password Change -                     ✅
-Password Reset -                      ✅
-Verify Email -                        ✅
-Verify Phone -                        ✅
-EMAIL Changing Process Safety -       ✅
-ACTIVATION safety -                   ✅
-TOKEN_REFRESH -                       ✅
-Overall integrity -                   ✅
+| ### AUTHENTICATION
+| -------------------------------------
+| Activation Process -                  ✅
+| Login -                               ✅
+| Logout -                              ✅
+| Delete Account -                      ✅
+| Send Email verification -             ✅
+| Send Telegram Verification Code -     ✅
+| Profile Update -                      ✅
+| Password Change -                     ✅
+| Password Reset -                      ✅
+| Verify Email -                        ✅
+| Verify Phone -                        ✅
+| EMAIL Changing Process Safety -       ✅
+| ACTIVATION safety -                   ✅
+| TOKEN_REFRESH -                       ✅
+| Overall integrity -                   ✅
+| 
+| 14/14
 
-14/14
 
-
+| ### PAYMENTS
+| -------------------------------------
+| <<< STUDENTS >>>
+| Replenish wallet -                   ✅  Shift to SUPERUSER                                  ✅
+| Subscribe -                          ✅
+| Buy course -                         ✅
+|
+| Transactions -                       ✅
+| Subscriptions -                      ✅
+|
+|
+| <<< INSTRUCTORS >>>
+| -------------------
 
 
 

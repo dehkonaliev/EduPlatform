@@ -309,7 +309,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
             'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
-            'total_reviews', 'requirements', 'what_included', 'modules'
+            'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules'
         ]
         read_only_fields = fields
         
@@ -322,7 +322,8 @@ class CourseDetailForStuSerializer(serializers.ModelSerializer):
             'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
             'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
-            'total_reviews', 'requirements', 'what_included', 'modules', 'is_enrolled'
+            'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules',
+            'is_enrolled'
         ]
         read_only_fields = fields
         
@@ -347,8 +348,8 @@ class CourseInfoSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating', 'instructor']
-        
+        fields = ['id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating', 'rating_count', 'instructor']
+        read_only_fields = fields
     def get_instructor(self, obj):
         instructor = obj.instructor
         return {
