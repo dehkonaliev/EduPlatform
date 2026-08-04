@@ -28,6 +28,8 @@ Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS) 
 
 Get Courses Filtered -               ✅
 
+QUIZZES CRUD -                       ✅
+QUIZZES SOLVE -                      ✅
 
 <<< INSTRUCTORS >>>
 #1 Course CRU -                      ✅
