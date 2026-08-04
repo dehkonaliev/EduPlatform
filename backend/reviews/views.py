@@ -3,8 +3,9 @@ from rest_framework.views import APIView
 from baseapp.utils import success_response, error_response
 from .serializers import ReviewSerializer
 from baseapp.permissions import IsOwner
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Review
+from courses.models import Course
 
 
 class ReviewCreateAPIView(APIView):
@@ -45,3 +46,14 @@ class ReviewUpDelAPIView(APIView):
         review.delete()
         
         return success_response(message="Review deleted")
+    
+    
+class GetCourseReviewsAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, pk):
+        course = Course.objects.filter(pk=pk).first()
+        if not course:
+            return error_response(message="Course not found", status_code=404)
+        reviews = course.reviews
+        serializer = ReviewSerializer(reviews, many=True)
+        return success_response(message="Reviews on course", data=serializer.data)
