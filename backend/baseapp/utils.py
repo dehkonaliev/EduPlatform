@@ -3,6 +3,7 @@ from rest_framework import serializers
 import secrets
 import string
 import re
+from profiles.models import InterestTag
 
 
 def generate_wallet_id(length=8):
@@ -41,3 +42,10 @@ def field_error(field, message):
     })
     
 XP_QUANTITY = 5
+
+def interest_recorder(user, tags):
+    
+    InterestTag.objects.bulk_create(
+        [InterestTag(student=user, tag=tag) for tag in tags],
+        ignore_conflicts=True
+    )

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (CourseCreateAPIView, CategoryAPIView, TagAPIView, CourseUpDelAPIView, ModuleCreateAPIView, ModuleUpdateDeleteAPIView,
     LessonCreateAPIView, LessonUpDelAPIView, CourseDetailAPIView, ModuleDetailAPIView, LessonDetailAPIView, FilteredCoursesAPIView,
-    FilteredCoursesInstructorAPIView
+    FilteredCoursesInstructorAPIView, GetMyFeedAPIView
 )
 
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path('course-create', CourseCreateAPIView.as_view()),
     path('course-update-delete/<uuid:pk>', CourseUpDelAPIView.as_view()),
     path('course-detail/<uuid:pk>', CourseDetailAPIView.as_view()),
+    path('my-feed', GetMyFeedAPIView.as_view()),
     
     # Filters
     path('filtered-courses', FilteredCoursesAPIView.as_view()),

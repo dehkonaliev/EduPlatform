@@ -37,3 +37,10 @@ class InstructorProfile(BaseModel):
     
     approval_status = models.CharField(max_length=10, choices=ApprovalStatus.choices, blank=True, null=True)
     
+
+class InterestTag(BaseModel):
+    student = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='interests')
+    tag = models.ForeignKey('courses.Tag', on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ['student', 'tag']

@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
+from django.db.models import Count
+from enrollments.models import Enrollment
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from baseapp.utils import success_response, error_response
@@ -277,6 +279,40 @@ class FilteredCoursesInstructorAPIView(APIView):
         return success_response(message="Filtered instructor courses", data=serializer.data)
     
 
+class GetMyFeedAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        if not request.user.is_authenticated:
+            courses = Course.objects.filter(status="PUBLISHED").order_by('-created_at')[:20]
+            serializer = CourseInfoSerializer(courses, many=True)
+            return success_response(message="My feed", data=serializer.data)
+
+        interests = request.user.interests
+        tag_ids = interests.values_list('tag', flat=True)
+        enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course', flat=True)
+
+        matched_courses = list(
+            Course.objects.filter(tags__id__in=tag_ids, status="PUBLISHED")
+            .exclude(id__in=enrolled_course_ids)
+            .annotate(match_count=Count('tags', filter=Q(tags__id__in=tag_ids), distinct=True))
+            .order_by('-match_count')
+            .distinct()[:20]
+        )
+
+        if len(matched_courses) < 20:
+            remaining = 20 - len(matched_courses)
+            matched_ids = [c.id for c in matched_courses]
+
+            fallback_courses = Course.objects.filter(status="PUBLISHED") \
+                .exclude(id__in=enrolled_course_ids) \
+                .exclude(id__in=matched_ids) \
+                .order_by('-created_at')[:remaining]
+
+            matched_courses += list(fallback_courses)
+
+        serializer = CourseInfoSerializer(matched_courses, many=True)
+        
+        return success_response(message="My feed", data=serializer.data)
      
   
 class CategoryAPIView(APIView):
