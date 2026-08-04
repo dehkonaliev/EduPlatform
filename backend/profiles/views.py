@@ -13,7 +13,7 @@ from .serializers import (StudentProfileSerializer, InstructorProfileSerializer
 class StudentProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        profile = StudentProfile.objects.filter(student=request.user).first()
         if not profile:
             return error_response(message="Student profile not found", status_code=404)
         

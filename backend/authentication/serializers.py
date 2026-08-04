@@ -22,9 +22,13 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreference
         fields = ('theme', 'language', 'timezone', 'email_notifications', 'push_notifications')
-        read_only_fields = fields
-
-
+        
+    def validate_language(self, language):
+        return language
+    
+    def validate_timezone(self, timezone):
+        return timezone
+    
 class UserSerializer(serializers.ModelSerializer):
     user_preference = UserPreferenceSerializer(source='userpreference', read_only=True)
 

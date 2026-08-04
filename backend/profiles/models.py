@@ -35,7 +35,7 @@ class InstructorProfile(BaseModel):
     total_courses_created = models.PositiveIntegerField(default=0)
     total_students_taught = models.PositiveIntegerField(default=0)
     
-    approval_status = models.CharField(max_length=10, choices=ApprovalStatus.choices, blank=True, null=True)
+    approval_status = models.CharField(max_length=10, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
     
 
 class InterestTag(BaseModel):

@@ -15,7 +15,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
     VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
-    UserSerializer
+    UserSerializer, UserPreferenceSerializer
 )
 
 
@@ -269,7 +269,14 @@ class PasswordResetConfirmAPIView(APIView):
             
         
         
+class PreferenceUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request):
+        serializer = UserPreferenceSerializer(instance=request.user.preference, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         
+        return success_response(message="User preference", data=serializer.data)
         
             
         

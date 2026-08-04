@@ -3,12 +3,12 @@ from .models import StudentWallet, Subscription, WalletTransaction, Plan
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from baseapp.utils import error_response, success_response
-from baseapp.permissions import IsStudentAndOwner
+from baseapp.permissions import IsStudentAndOwner, IsAdminOrReadOnly
 from .serializers import ReplenishWalletSerializer, SubscribeSerializer, PlanSerializer, BuyCourseSerializer
 
 
 class ReplenishWalletAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
     def patch(self, request):
         serializer = ReplenishWalletSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

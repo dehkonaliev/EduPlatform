@@ -9,7 +9,8 @@ from .models import StudentProfile
 class InstructorProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = InstructorProfile
-        fields = ['headline', 'bio', 'linkedin_url', 'website_url']
+        fields = ['headline', 'bio', 'linkedin_url', 'website_url', 'total_courses_created', 'total_students_taught', 'approval_status']
+        read_only_fields = ['total_students_taught', 'total_courses_created', 'approval_status']
 
     def validate_headline(self, value):
         value = value.strip()
@@ -62,14 +63,12 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
             return field_error("non_field_error", "Please, provide at least one of above!")
         return attrs
         
-    
-    def update(self, instance, validated_data):
-            return super().update(instance, validated_data)
         
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['gender', 'bio']
+        fields = ['gender', 'bio', 'is_visible', 'xp', 'streak', 'level', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
+        read_only_fields = ['xp', 'streak', 'level', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
 
     def validate_gender(self, value):
         valid_values = StudentProfile.Genders.values
@@ -83,6 +82,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             return field_error("bio", "Bio cannot exceed 2000 characters.")
         return value
         
+
     
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+    
