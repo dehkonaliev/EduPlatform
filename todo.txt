@@ -7,8 +7,8 @@
 | Update Course Rating -               ✅
 | Add Rating to filter ser -           ✅
 | Add rating to detail ser -           ✅
-|
-|
+| Get Course reviews -                 ❌
+| Get my reviews -                     ❌
 
 
 | ### LEADERS

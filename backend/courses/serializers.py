@@ -294,7 +294,6 @@ class ModuleDetailSerializer(serializers.ModelSerializer):
 
 # COURSE DETAIL
 class ModuleMinimalSerializer(serializers.ModelSerializer):
-    course = CourseMinimalSerializer(read_only=True)
     lessons = LessonSerializer(many=True, read_only=True)
 
     class Meta:

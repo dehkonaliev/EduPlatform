@@ -57,3 +57,10 @@ class GetCourseReviewsAPIView(APIView):
         reviews = course.reviews
         serializer = ReviewSerializer(reviews, many=True)
         return success_response(message="Reviews on course", data=serializer.data)
+    
+class GetMyReviewsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        reviews = request.user.my_reviews
+        serializer = ReviewSerializer(reviews, many=True)
+        return success_response(message="Your reviews", data=serializer.data)

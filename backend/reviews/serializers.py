@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Review
+from courses.models import Course
 from baseapp.utils import field_error
 
 
@@ -33,3 +34,16 @@ class ReviewSerializer(serializers.ModelSerializer):
             return field_error("course", "You can rate a specific course once only")
         review = Review.objects.create(user=user, course=course, comment=validated_data.get('comment'), rating=validated_data.get('rating'))
         return review
+    
+class CourseMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'slug', 'thumbnail']
+
+    
+class ReviewSerializer(serializers.ModelSerializer):
+    course = CourseMinimalSerializer()
+    class Meta:
+        model = Review
+        fields = ['id', 'course', 'rating', 'comment']
+        read_only_fields = fields
