@@ -108,7 +108,6 @@ class VerifyCodeSerializer(serializers.Serializer):
 class ActivateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     conf_password = serializers.CharField(write_only=True)
-    email_or_phone = serializers.CharField(write_only=True)
     token = serializers.CharField()
     user_role = serializers.ChoiceField(
         choices=[
@@ -118,7 +117,7 @@ class ActivateUserSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = CustomUser
-        fields = ['id', 'email_or_phone', 'token', 'first_name', 'last_name', 'username', 'user_role', 'password', 'conf_password']
+        fields = ['id', 'token', 'first_name', 'last_name', 'username', 'user_role', 'password', 'conf_password']
         read_only_fields = ['id']
         write_only_fields = ['token']
         
@@ -145,16 +144,11 @@ class ActivateUserSerializer(serializers.ModelSerializer):
         password = attrs['password']
         conf_password = attrs['conf_password']
         token = attrs['token']
-        email_or_phone = attrs['email_or_phone']
 
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         if not token_obj:
             return field_error("token", "Invalid or expired token")
-
-        user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
-        if not user:
-            return field_error("email_or_phone", "No account found with this email or phone")
-        
+        user = token_obj.user
         if user.account_status == CustomUser.AccountStatus.ACTIVE:
             return field_error("email_or_phone", "User already activated")
 

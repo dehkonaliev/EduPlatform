@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (CreateQuizAPIView, CreateQuestionAPIView, CreateOptionAPIView, UpDelQuizAPIView, DeleteQuestionAPIView,
-    DeleteOptionAPIView, GetQuizAPIView, QuizDetailView, QuizAttemptDetailView, QuizAttemptCreateView, MyQuizAttemptListView, QuizAttemptListForInstructorView
+    DeleteOptionAPIView, GetQuizAPIView, QuizAttemptAPIView
 )
 
 
@@ -18,10 +18,7 @@ urlpatterns = [
     path('create-option', CreateOptionAPIView.as_view()),
     path('delete-option/<uuid:pk>', DeleteOptionAPIView.as_view()),
     
-    #AI PART
-    path('<uuid:pk>', QuizDetailView.as_view()),
-    path('attempts', QuizAttemptCreateView.as_view()),
-    path('attempts/<uuid:pk>', QuizAttemptDetailView.as_view()),
-    path('attempts/mine', MyQuizAttemptListView.as_view()),
-    path('<uuid:quiz_id>/attempts', QuizAttemptListForInstructorView.as_view()),
+    #QUIZ ATTEMPY
+    path('quiz-attempt/<uuid:pk>', QuizAttemptAPIView.as_view())
+    
 ]

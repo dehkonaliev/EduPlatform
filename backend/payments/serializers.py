@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from baseapp.utils import field_error, validate_wallet_id
+from baseapp.emails import send_notification
 from .models import Subscription, WalletTransaction, StudentWallet, Plan
 from enrollments.models import Enrollment
 from decimal import Decimal
@@ -32,6 +33,7 @@ class ReplenishWalletSerializer(serializers.Serializer):
         wallet.save()
         WalletTransaction.objects.create(wallet=wallet, amount=amount, transaction_type="REPLENISH")
         Notification.objects.create(user=wallet.student, message=f"Your balanance replenished, ${amount}", notif_type="REPLENISH")
+        send_notification(wallet.student.email, message=f"Your balance replenished", data={"total": wallet.balance, 'received': amount})
         return wallet
 
 class PlanSerializer(serializers.ModelSerializer):
@@ -70,6 +72,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
         wallet.balance = wallet.balance - price
         wallet.save()
         WalletTransaction.objects.create(wallet=wallet, amount=price, transaction_type="SUBSCRIPTION")
+        Notification.objects.create(user=wallet.student, message=f"Subscription successful, Plan: {subscription.subscription_plan}", notif_type="SUBSCRIPTION")
         return subscription
         
         
@@ -105,6 +108,7 @@ class BuyCourseSerializer(serializers.ModelSerializer):
         wallet.balance = wallet.balance - course.price
         wallet.save()
         WalletTransaction.objects.create(wallet=wallet, amount=course.price, transaction_type=WalletTransaction.TransactionTypes.PAID_COURSE)
+        Notification.objects.create(user=student, message=f"You bought the course successfully, Course: {course.title}", notif_type="PAYMENT")
         enrollment = Enrollment.objects.create(student=student, course=course, is_bought=True)
         return enrollment
         

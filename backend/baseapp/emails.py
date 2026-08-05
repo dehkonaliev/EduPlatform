@@ -13,3 +13,15 @@ def send_verification_code(user_email, code):
     
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+    
+def send_notification(user_email, message, data=None):
+    subject = message
+    
+    html_content = render_to_string('emails/notification.html', {'data': data})
+    
+    text_content = strip_tags(html_content) 
+
+    msg = EmailMultiAlternatives(subject, text_content, None, [user_email])
+    
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()

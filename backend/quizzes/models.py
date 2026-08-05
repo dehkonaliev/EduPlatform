@@ -26,16 +26,8 @@ class QuizOption(BaseModel):
     option = models.CharField(max_length=2000)
     is_correct = models.BooleanField(default=False)
     
-    
 class QuizAttempt(BaseModel):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='attempts')
-    student = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='quiz_attempts')
-    score = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # e.g. 83.33
-    submitted_at = models.DateTimeField(auto_now_add=True)
-
-
-class QuestionResponse(BaseModel):
-    attempt = models.ForeignKey(QuizAttempt, on_delete=models.CASCADE, related_name='responses')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='responses')
-    text_answer = models.CharField(max_length=2000, blank=True, null=True) 
-    selected_options = models.ManyToManyField(QuizOption, related_name='responses', blank=True)  # for RADIO/CHECKBOX
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="attempts")
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quiz_attempts')
+    score = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    
