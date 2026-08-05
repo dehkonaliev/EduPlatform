@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import generics, status
 from baseapp.permissions import IsInstructorAndOwner, IsAdminOrOwnerOrReadOnlyPublished, IsInstructorOrAdmin, IsStudentAndOwner
 from baseapp.utils import success_response, error_response
-from .models import QuizOption, Question, Quiz
+from .models import QuizOption, Question, Quiz, QuizAttempt
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -102,6 +102,8 @@ class QuizAttemptAPIView(APIView):
         quiz = Quiz.objects.filter(pk=pk).first()
         if not quiz:
             return error_response(message="Quiz not found", status_code=404)
+        if QuizAttempt.objects.filter(quiz=quiz, student=request.user).count() > 2:
+            return error_response(message="You can have tree trials on every quiz", status_code=403)
         serializer = QuizAttemptSerializer(data=request.data, context={'user': request.user, 'quiz': quiz})
         serializer.is_valid(raise_exception=True)
         serializer.save()

@@ -191,7 +191,8 @@ class QuizAttemptSerializer(serializers.ModelSerializer):
                     print("correct", 'TEXT') # ------##########
                     counter += 1
         score = round(Decimal(counter) / Decimal(len(questions)) * 100, 2)
-        attempt = QuizAttempt.objects.create(score=score, quiz=quiz, student=self.context.get('user'))
+        student = self.context.get('user')
+        attempt = QuizAttempt.objects.create(score=score, quiz=quiz, student=student)
         return attempt
         
         
