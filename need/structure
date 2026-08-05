@@ -1,0 +1,29 @@
+src/
+├── app/
+│   ├── App.tsx                 # root: providers + router
+│   ├── router.tsx              # route table
+│   └── providers/
+│       └── ThemeProvider.tsx   # dark/light mode context
+├── assets/                     # logo, illustrations
+├── components/
+│   ├── ui/                     # generic primitives: Button, Avatar, Badge, Input...
+│   └── layout/
+│       └── Navbar/
+│           ├── Navbar.tsx
+│           ├── Logo.tsx
+│           ├── SearchBar.tsx
+│           ├── ProfileMenu.tsx
+│           ├── MobileMenu.tsx
+│           └── index.ts
+├── features/                   # one folder per backend module
+│   ├── auth/        { api/, components/, hooks/, types.ts }
+│   ├── courses/
+│   ├── enrollments/
+│   ├── payments/
+│   └── quizzes/
+├── hooks/                      # useTheme, useOnClickOutside, useDebounce...
+├── lib/                        # cn(), axios instance, constants
+├── pages/                      # route-level screens composed from features
+├── types/                      # shared/global types
+├── index.css
+└── main.tsx

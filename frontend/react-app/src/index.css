@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Dark mode toggled by adding/removing `.dark` on <html> — see ThemeProvider.tsx */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* --- Ink: primary brand scale (deep violet-blue, "intellectual dusk") --- */
+  --color-ink-950: #14122b;
+  --color-ink-900: #1b1840;
+  --color-ink-800: #241f52;
+  --color-ink-700: #2b2560;
+  --color-ink-600: #3d3480;
+  --color-ink-500: #524aa0;
+  --color-ink-300: #a49bd6;
+  --color-ink-100: #e8e6f5;
+  --color-ink-50: #f4f3fb;
+
+  /* --- Paper: warm neutral scale for light mode --- */
+  --color-paper-50: #faf8f4;
+  --color-paper-100: #f2efe7;
+  --color-paper-200: #e6e1d6;
+
+  /* --- Ember: accent — "spark of curiosity" --- */
+  --color-ember-300: #f6c579;
+  --color-ember-400: #f0a93a;
+  --color-ember-500: #e0932a;
+  --color-ember-600: #c97d1e;
+
+  /* --- Teal: success / progress --- */
+  --color-teal-500: #2fa88f;
+  --color-teal-600: #24866f;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --shadow-glow-ember: 0 0 0 4px rgba(240, 169, 58, 0.18);
+}
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  body {
+    @apply bg-paper-50 text-ink-950 dark:bg-ink-950 dark:text-paper-50;
+    @apply font-sans antialiased;
+  }
+
+  /* Visible keyboard focus everywhere — accessibility floor, not optional */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ember-400 ring-offset-2 ring-offset-paper-50 dark:ring-offset-ink-950;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

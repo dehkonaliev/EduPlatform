@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Quiz, QuizOption, Question, QuizAttempt
-from baseapp.utils import field_error
+from profiles.models import StudentProfile
+from baseapp.utils import field_error, XP_QUANTITY
 from decimal import Decimal
 import uuid
       
@@ -170,9 +171,7 @@ class QuizAttemptSerializer(serializers.ModelSerializer):
                 correct_option = question.options.filter(is_correct=True).first()
                 if not correct_option:
                     return field_error("response", "No correct answers found 1") 
-                print(selected_options[0], correct_option.pk, 'Check')  # ------###########
                 if len(selected_options) > 0 and selected_options[0] == str(correct_option.pk):
-                    print("correct", "RADIO") # ------#######
                     counter += 1
             elif question.question_type == "CHECKBOX":
                 correct_options = question.options.filter(is_correct=True)
@@ -181,18 +180,20 @@ class QuizAttemptSerializer(serializers.ModelSerializer):
                 correct = set(str(pk) for pk in correct_options.values_list('pk', flat=True))
                 selected = set(map(str, selected_options))
                 if selected == correct:
-                    print("correct", "CHECKBOX")
                     counter += 1
             elif question.question_type == "TEXT":
                 correct_option = question.options.filter(is_correct=True).first()
                 if not correct_option:
                     return field_error("response", "No correct answers found")
                 if len(selected_options) > 0 and  correct_option.option == selected_options[0]:
-                    print("correct", 'TEXT') # ------##########
                     counter += 1
         score = round(Decimal(counter) / Decimal(len(questions)) * 100, 2)
         student = self.context.get('user')
         attempt = QuizAttempt.objects.create(score=score, quiz=quiz, student=student)
+        profile = StudentProfile.objects.filter(student=student).first()
+        profile.xp = profile.xp +  score * (XP_QUANTITY + 3 * profile.level) // 100
+        profile.save(update_fields=['xp'])
+        
         return attempt
         
         

@@ -1,0 +1,212 @@
+
+| ### REVIEWS
+| -------------------------------------
+| Create Review -                      ✅
+| Update Review -                      ✅
+| Delete Review -                      ✅
+| Update Course Rating -               ✅
+| Add Rating to filter ser -           ✅
+| Add rating to detail ser -           ✅
+| Get Course reviews -                 ✅
+| Get my reviews -                     ✅
+
+
+### NOTIFICATIONS
+-------------------------------------
+| Web notifications -                  ✅
+| Connect all parts -                  ✅
+| Email notifications -                ✅
+| Notification settings -              ❌
+
+| ### LEADERS
+| -------------------------------------
+| XP given for lesson -                ✅
+| XP for QUIZZES -                     ❌
+| Streaks -                            ❌
+| levels -                             ❌
+| Friend Request -                     ❌
+| 
+
+### PROFILES
+-------------------------------------
+Profiles -                             ✅
+Preference -                           ✅
+Visibility -                           ✅
+--------
+
+
+❌✅
+### COURSES 
+-------------------------------------
+<<< Overall get requests >>>
+Get Course Detail -                  ✅
+Get Module Detail -                  ✅
+Get Lesson detail -                  ✅      (Hidden from unenrolled STUDENTS)                ✅
+
+Get Courses Filtered -               ✅
+
+QUIZZES CRUD -                       ✅
+QUIZZES SOLVE -                      ✅
+
+<<< INSTRUCTORS >>>
+#1 Course CRU -                      ✅
+#2 Module CRU -                      ✅
+#3 Lesson CRU -                      ✅
+#4 Get My Courses With Filter -      ✅
+
+<<< STUDENTS >>>
+#1 Get Personalized feed -           ✅
+#2 Get My enrolled courses -         ✅
+#3 Get the last lesson -             ✅
+
+<<< SUPERUSER >>>
+-----------------
+
+### ENROLLMENTS
+-------------------------------------
+<<< STUDENTS >>>
+#1 Enrol course -                    ✅   (Set a payment boudary)                            ✅
+#2 Drop Enrolled course -            ✅
+#3 Lesson Progress Create -          ✅
+
+
+### CERTIFICATES
+-------------------------------------
+
+
+| ### AUTHENTICATION
+| -------------------------------------
+| Activation Process -                  ✅
+| Login -                               ✅
+| Logout -                              ✅
+| Delete Account -                      ✅
+| Send Email verification -             ✅
+| Send Telegram Verification Code -     ✅
+| Profile Update -                      ✅
+| Password Change -                     ✅
+| Password Reset -                      ✅
+| Verify Email -                        ✅
+| Verify Phone -                        ✅
+| EMAIL Changing Process Safety -       ✅
+| ACTIVATION safety -                   ✅
+| TOKEN_REFRESH -                       ✅
+| Overall integrity -                   ✅
+| 
+| 14/14
+
+
+| ### PAYMENTS
+| -------------------------------------
+| <<< STUDENTS >>>
+| Replenish wallet -                   ✅  Shift to SUPERUSER                                  ✅
+| Subscribe -                          ✅
+| Buy course -                         ✅
+|
+| Transactions -                       ✅
+| Subscriptions -                      ✅
+|
+|
+| <<< INSTRUCTORS >>>
+| -------------------
+
+
+
+
+
+
+
+{
+    "success": true,
+    "message": "Quiz detail",
+    "data": {
+        "id": "a891e0bc-4919-4456-a0b9-3038dc3b9f39",
+        "title": "First quiz",
+        "lesson": "bb32eb7b-3923-46ef-ac6d-afab78b6d6e9",
+        "questions": [
+            {
+                "id": "2460e506-09cf-4297-81d3-065767d461c0",
+                "question": "#1 Who is the most beloved person in the history?",
+                "question_type": "RADIO",
+                "options": [
+                    {
+                        "id": "dac777e4-cb3e-4b9b-9da9-a94b588ded83",
+                        "option": "Muhammad A.S"
+                    },
+                    {
+                        "id": "c92f0795-eb89-46d1-a1bc-55fad0833bbe",
+                        "option": "Jorj Washington"
+                    },
+                    {
+                        "id": "5c7518ea-478d-4180-a270-2edadad0aa7e",
+                        "option": "Henrix Ford"
+                    },
+                    {
+                        "id": "e33ce465-0f8b-4797-929b-40da0ff60a1b",
+                        "option": "Mahadma Gandi"
+                    }
+                ]
+            },
+            {
+                "id": "628afe31-91eb-468f-957e-4ce1b13e394c",
+                "question": "#2 Which ones are gases?",
+                "question_type": "CHECKBOX",
+                "options": [
+                    {
+                        "id": "9e0980b0-5def-41e6-847a-29e578cb40b7",
+                        "option": "Argon"
+                    },
+                    {
+                        "id": "32b60baf-03d2-401d-a800-9bd722efbe8e",
+                        "option": "Oxygen"
+                    },
+                    {
+                        "id": "4bd67d49-e656-4a22-8ee7-4b9ff3382470",
+                        "option": "Silicon"
+                    },
+                    {
+                        "id": "08864d20-9693-4e42-9bc4-57d5f6dcdda9",
+                        "option": "Cremnium"
+                    }
+                ]
+            },
+            {
+                "id": "45f5028c-bf43-4a65-897a-89e4643dbb61",
+                "question": "#3 Who invented telephone?",
+                "question_type": "RADIO",
+                "options": [
+                    {
+                        "id": "cf6b6208-09f8-44bd-9db2-94a63336432f",
+                        "option": "Henrix Ford"
+                    },
+                    {
+                        "id": "d93e43d0-83f4-4d63-a29c-4ca6ffe8cca5",
+                        "option": "Alexandr Bell"
+                    },
+                    {
+                        "id": "dbcb6ac9-bbca-44df-9c48-6850c082bb16",
+                        "option": "Brothers Rights"
+                    }
+                ]
+            },
+            {
+                "id": "316b949a-c680-43e2-a831-17c88677c827",
+                "question": "#4 Write the name of the longest river?",
+                "question_type": "RADIO",
+                "options": [
+                    {
+                        "id": "b8b3812e-b1f6-40db-8947-62feaf682b7e",
+                        "option": "Nile"
+                    },
+                    {
+                        "id": "5a78761d-bb5b-4fcb-85dc-e0e0cd929abe",
+                        "option": "Nile"
+                    },
+                    {
+                        "id": "e6eb5aed-2fa7-4f77-83d7-dafd2d40e41c",
+                        "option": "Nile"
+                    }
+                ]
+            }
+        ]
+    }
+}

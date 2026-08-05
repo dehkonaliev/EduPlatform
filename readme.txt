@@ -1,14 +1,14 @@
-MyUstoz
-=======
+Curiosite
+=========
 
-MyUstoz is a self-learning education platform designed for students and instructors. The main idea of the platform is to create a modern learning marketplace where instructors can create and publish courses, sell access to their lessons, and build a reputation, while students can discover courses, enroll, learn, and progress through structured lessons.
+Curiosite is a self-learning education platform designed for students and instructors. The main idea of the platform is to create a modern learning marketplace where instructors can create and publish courses, sell access to their lessons, and build a reputation, while students can discover courses, enroll, learn, and progress through structured lessons.
 
 The platform is being developed as a Django REST API backend with a clear separation between authentication, user profiles, course management, enrollments, payments, and quizzes. It is aimed at self-studiers who want a simple but powerful learning experience with both educational and community-oriented features.
 
 Project Purpose
 ---------------
 
-MyUstoz is meant to be a course platform for self-learners where:
+Curiosite is meant to be a course platform for self-learners where:
 - instructors can upload and manage courses,
 - students can buy or access courses and study at their own pace,
 - learning content is organized into modules and lessons,
@@ -71,9 +71,7 @@ The following parts are already implemented in the current backend:
    - Question creation
    - Multiple choice option creation
    - Quiz retrieval
-   - Quiz attempt creation and tracking
-   - Student quiz attempts list
-   - Instructor view of quiz attempts
+   - Quiz attempt submission and scoring
 
 7. Gamification Foundation
    - XP is awarded when a lesson is completed
@@ -406,32 +404,12 @@ The following APIs are currently available in the backend. They are numbered for
    - Purpose: deletes an option
    - Common errors: option not found, unauthorized access
 
-   6.9 GET /api/quizzes/<uuid:pk>
-   - Parameters: pk in URL path
-   - Purpose: retrieves quiz data for student attempt flow
-   - Common errors: quiz not found
-
-   6.10 POST /api/quizzes/attempts
-   - Parameters: quiz, responses[] where each response contains question, text_answer, selected_options
+   6.9 POST /api/quizzes/quiz-attempt/<uuid:pk>
+   - Parameters: question_responses[] where each response contains question, text_answer, selected_options
    - Purpose: submits a quiz attempt and calculates score
    - Common errors: missing answers, invalid questions, invalid options, invalid response structure
-
-   6.11 GET /api/quizzes/attempts/<uuid:pk>
-   - Parameters: pk in URL path
-   - Purpose: fetches a single quiz attempt result
-   - Common errors: attempt not found, unauthorized access
-
-   6.12 GET /api/quizzes/attempts/mine
-   - Parameters: quiz (optional query param)
-   - Purpose: lists the current student’s quiz attempts
-   - Common errors: none
-
-   6.13 GET /api/quizzes/<uuid:quiz_id>/attempts
-   - Parameters: quiz_id in URL path
-   - Purpose: lists all attempts for a quiz as an instructor
-   - Common errors: unauthorized instructor access
 
 Short Summary
 -------------
 
-MyUstoz is a growing self-learning course platform where instructors can publish and sell courses, students can buy and study them, and the system supports learning progress, payments, subscriptions, and quizzes. The platform already has a strong foundation for course-based education, while social, notification, visibility, review, and leaderboard features are planned for future implementation.
+Curiosite is a growing self-learning course platform where instructors can publish and sell courses, students can buy and study them, and the system supports learning progress, payments, subscriptions, and quizzes. The platform already has a strong foundation for course-based education, while social, notification, visibility, review, and leaderboard features are planned for future implementation.

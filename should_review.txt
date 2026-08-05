@@ -1,2 +1,0 @@
-#1 Lesson Create APIView, Serializer
-#2 Quiz AI part recreate
