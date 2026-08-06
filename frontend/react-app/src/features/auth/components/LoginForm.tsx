@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Mail, Phone, User } from "lucide-react";
-import { isAxiosError } from "axios";
 import { useAuth } from "../../../providers/AuthProvider";
 import { cn } from "../../../lib/utils";
+import { parseApiError } from "../../../lib/api/parseApiError";
 
 type LoginMethod = "phone" | "username" | "email";
 
@@ -25,21 +25,6 @@ const METHOD_CONFIG: Record<
   username: { inputType: "text", placeholder: "your_username", autoComplete: "username", inputMode: "text" },
   email: { inputType: "email", placeholder: "you@example.com", autoComplete: "email", inputMode: "email" },
 };
-
-/**
- * Extracts a user-facing message from whatever shape your backend sends
- * back on a failed login. Adjust this as you find out what error responses
- * actually look like — this is a best guess at {success:false, message}.
- */
-function getErrorMessage(error: unknown): string {
-  if (isAxiosError(error)) {
-    const data = error.response?.data as { message?: string; detail?: string } | undefined;
-    if (data?.message) return data.message;
-    if (data?.detail) return data.detail;
-    if (error.response?.status === 401) return "Incorrect credentials or password.";
-  }
-  return "Something went wrong. Please try again.";
-}
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -76,7 +61,7 @@ export function LoginForm() {
       const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(parseApiError(err).generalMessage);
     } finally {
       setIsSubmitting(false);
     }
