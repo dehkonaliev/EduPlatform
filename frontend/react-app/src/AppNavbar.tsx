@@ -1,5 +1,6 @@
-import { Navbar } from "./components/layout/Navbar";
+import { Navbar } from "./components/layout/Navbar/Navbar";
 import { useAuth } from "./providers/AuthProvider";
+import { resolveMediaUrl } from "./lib/media";
 
 /**
  * Keeps Navbar itself presentational/dumb (easy to test, easy to reuse) by
@@ -14,7 +15,7 @@ export function AppNavbar() {
         user
           ? {
               name: `${user.first_name} ${user.last_name}`.trim() || user.email || "Account",
-              avatarUrl: user.photo ?? undefined,
+              avatarUrl: resolveMediaUrl(user.photo) ?? undefined,
             }
           : null
       }

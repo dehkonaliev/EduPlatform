@@ -87,7 +87,13 @@ export function SignupCodeStep({ emailOrPhone, onSuccess, onBack }: Props) {
       setDigits(Array(CODE_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
     } catch (err) {
-      setError(parseApiError(err).generalMessage);
+      const parsed = parseApiError(err);
+      // A still-valid code isn't an error here either — the one already sent still works.
+      if (parsed.fieldErrors.code) {
+        setCooldown(RESEND_COOLDOWN_SECONDS);
+        return;
+      }
+      setError(parsed.generalMessage);
     }
   }
 

@@ -1,6 +1,18 @@
-export type UserRole = "STUDENT" | "INSTRUCTOR";
-export type AuthType = "VIA_EMAIL" | "VIA_PHONE"; // tell me if there's a social-login variant too
-export type AccountStatus = "ACTIVE" | "SUSPENDED" | "DEACTIVATED"; // confirm the non-ACTIVE values with your backend
+export type { ApiEnvelope } from "../../../lib/api/types";
+
+export type UserRole = "STUDENT" | "INSTRUCTOR" | "SUPERUSER";
+export type AuthType = "EMAIL" | "PHONE" | "GOOGLE";
+export type AccountStatus = "PENDING" | "ACTIVE" | "SUSPENDED" | "BLOCKED" | "DELETED";
+export type ThemeMode = "LIGHT" | "DARK" | "SYSTEM";
+
+/** From the UserPreference model — nested inside AccountProfile.user_preference. */
+export interface UserPreference {
+  theme: ThemeMode;
+  language: string;
+  timezone: string;
+  email_notifications: boolean;
+  push_notifications: boolean;
+}
 
 /**
  * Account-level data — the unwrapped `data` field from
@@ -18,14 +30,7 @@ export interface AccountProfile {
   email_verified: boolean;
   phone_verified: boolean;
   photo: string | null;
-  user_preference: unknown;
-}
-
-/** Generic envelope shape your backend wraps every response in. */
-export interface ApiEnvelope<T> {
-  success: boolean;
-  message: string;
-  data: T;
+  user_preference: UserPreference | null;
 }
 
 export interface LoginPayload {

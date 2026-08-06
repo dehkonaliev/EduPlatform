@@ -29,8 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const profile = await authApi.fetchMyProfile();
     setUser(profile);
 
-    // A suspended/deactivated account shouldn't stay "logged in" in the UI
-    if (profile.account_status !== "ACTIVE") {
+    // Only force-logout for statuses that actually mean "you can't be here"
+    // — matches CustomUser.AccountStatus in the backend model exactly.
+    // "PENDING" is NOT here: it means activated-but-unverified, still a
+    // valid logged-in state (show a verify-your-email banner for it instead).
+    const BLOCKING_STATUSES = ["SUSPENDED", "BLOCKED", "DELETED"];
+    if (BLOCKING_STATUSES.includes(profile.account_status)) {
       tokenStorage.clear();
       setUser(null);
     }
@@ -55,11 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refetchUser]);
 
   const login = useCallback(async (payload: LoginPayload) => {
-  const tokens = await authApi.login(payload);
-  tokenStorage.setTokens(tokens.access, tokens.refresh);
-  const profile = await authApi.fetchMyProfile();
-  setUser(profile);
-}, []);
+    const tokens = await authApi.login(payload);
+    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    const profile = await authApi.fetchMyProfile();
+    setUser(profile);
+  }, []);
 
   const logout = useCallback(async () => {
     const refresh = tokenStorage.getRefresh();

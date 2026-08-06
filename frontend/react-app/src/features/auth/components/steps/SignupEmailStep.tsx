@@ -27,7 +27,15 @@ export function SignupEmailStep({ onSuccess }: Props) {
       await authApi.signup({ email_or_phone: value.trim() });
       onSuccess(value.trim());
     } catch (err) {
-      setError(parseApiError(err).generalMessage);
+      const parsed = parseApiError(err);
+      // Backend rejects a second code request while one's still valid — but
+      // that means the user CAN already verify with the code they were sent
+      // earlier, so let them through to the verify step instead of blocking them.
+      if (parsed.fieldErrors.code) {
+        onSuccess(value.trim());
+        return;
+      }
+      setError(parsed.generalMessage);
     } finally {
       setIsSubmitting(false);
     }
