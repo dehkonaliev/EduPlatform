@@ -92,7 +92,7 @@ class CodeVerify(BaseModel):
 
 class UserPreference(BaseModel):
     class ThemeMode(models.TextChoices):
-        LIGHT = 'LIGHT', 'dark'
+        LIGHT = 'LIGHT', 'light'
         DARK = 'DARK', 'dark'
         SYSTEM = 'SYSTEM', 'system'
         

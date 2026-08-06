@@ -37,11 +37,11 @@ def username_validator(username):
 
 def password_validator(password):
     if not re.search(r'[A-Z]', password):
-        return field_error({"password", f"Password must contain at least one uppercase letter."})
+        return field_error("password", f"Password must contain at least one uppercase letter.")
     if not re.search(r'[a-z]', password):
-        return field_error({"password", "Password must contain at least one lowercase letter."})
+        return field_error("password", "Password must contain at least one lowercase letter.")
     if not re.search(r'[0-9]', password):
-        return field_error({"password", "Password must contain at least one digit."})
+        return field_error("password", "Password must contain at least one digit.")
     if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/;\'~`]', password):
-        return field_error({"password", "Password must contain at least one special character."})
+        return field_error("password", "Password must contain at least one special character.")
     return True

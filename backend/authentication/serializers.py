@@ -94,7 +94,7 @@ class VerifyCodeSerializer(serializers.Serializer):
         user = CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone_number=email_or_phone)).first()
         
         if not user:
-            return error_response(message="User not found", status_code=404)
+            return field_error("email_or_phone", "User not found")
         
         verification = check_code(user, code)
         

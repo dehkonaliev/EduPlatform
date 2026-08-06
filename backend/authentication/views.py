@@ -117,6 +117,13 @@ class UserProfileAPIView(APIView):
         
         serializer = UserSerializer(user)
         return success_response(message="Profile info", data=serializer.data)
+    
+class MyProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        
+        serializer = UserSerializer(request.user)
+        return success_response(message="My profile info", data=serializer.data)
 
 class PasswordChangeAPIView(APIView):
     permission_classes = [IsAuthenticated]
