@@ -25,7 +25,7 @@ export function CourseSidebar({ courseId, course }: CourseSidebarProps) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(course.is_enrolled);
 
   const thumbnailUrl = resolveMediaUrl(course.thumbnail);
   const isBuyFlow = course.pricing_type === "SPECIAL";

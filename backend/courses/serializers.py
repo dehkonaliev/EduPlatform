@@ -310,15 +310,22 @@ class InstructorMiniSerializer(serializers.ModelSerializer):
 class CourseDetailSerializer(serializers.ModelSerializer):
     modules = ModuleMinimalSerializer(many=True, read_only=True)
     instructor = InstructorMiniSerializer()
+    is_enrolled = serializers.SerializerMethodField()
     class Meta:
         model = Course
         fields = [
-            'instructor', 'title', 'slug', 'subtitle', 'description', 'category',
+            'instructor', 'is_enrolled', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
             'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
             'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules'
         ]
-        read_only_fields = fields
+        
+    def get_is_enrolled(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            if user.enrollments.filter(course=obj).exists():
+                return True
+        return False
         
         
 # LESSON DETAIL

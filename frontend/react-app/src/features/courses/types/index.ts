@@ -84,4 +84,5 @@ export interface CourseDetail {
   requirements: string;
   what_included: string;
   modules: CourseModule[];
+  is_enrolled: boolean;
 }

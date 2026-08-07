@@ -70,7 +70,7 @@ class CourseDetailAPIView(APIView):
         
         self.check_object_permissions(request, course)
         
-        serializer = CourseDetailSerializer(course)
+        serializer = CourseDetailSerializer(course, context={'request':request})
         return success_response(message="Course detail", data=serializer.data)
 
 
