@@ -270,7 +270,7 @@ class VerifyPhoneAPIView(APIView):
 
 class PasswordResetRequestAPIView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request):
+    def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -283,7 +283,7 @@ class PasswordResetRequestAPIView(APIView):
         if verify_type == 'VIA_PHONE':
             return success_response(
                 message="You can get reset password link via our telegram bot!",
-                data={"email": serializer.validated_data['email_or_phone']}
+                data={"phone_number": serializer.validated_data['email_or_phone']}
             )
 
 class PasswordResetConfirmAPIView(APIView):

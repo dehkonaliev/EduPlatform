@@ -64,3 +64,11 @@ class GetMyReviewsAPIView(APIView):
         reviews = request.user.my_reviews.order_by('-created_at')
         serializer = MyReviewSerializer(reviews, many=True)
         return success_response(message="Your reviews", data=serializer.data)
+    
+class IsReviewedAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        if request.user.my_reviews.filter(course__pk=pk).exists():
+            return success_response(message="Reviewed!", data={"is_reviewed": True})
+        return success_response(message="Not Reviewed!", data={"is_reviewed": False})        
+                

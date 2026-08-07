@@ -7,6 +7,10 @@ import type {
   ApiEnvelope,
   AuthTokens,
   LoginPayload,
+  PasswordChangePayload,
+  PasswordResetConfirmPayload,
+  PasswordResetRequestPayload,
+  PasswordResetRequestResponseData,
   SignupPayload,
   SignupResponseData,
   UpdateProfileResponseData,
@@ -164,5 +168,31 @@ export const authApi = {
     await apiClient.post<ApiEnvelope<unknown>>("/auth/delete-account", {
       verification_code: verificationCode,
     });
+  },
+
+  // --- Password flows ---
+
+  /** POST /api/auth/password-change — change the password while signed in. */
+  changePassword: async (payload: PasswordChangePayload): Promise<void> => {
+    await apiClient.post<ApiEnvelope<unknown>>("/auth/password-change", payload);
+  },
+
+  /**
+   * POST /api/auth/password-reset-request — emails a reset link for an
+   * email address, or explains the Telegram route for a phone number.
+   */
+  requestPasswordReset: async (
+    payload: PasswordResetRequestPayload,
+  ): Promise<PasswordResetRequestResponseData> => {
+    const { data } = await apiClient.post<ApiEnvelope<PasswordResetRequestResponseData>>(
+      "/auth/password-reset-request",
+      payload,
+    );
+    return data.data;
+  },
+
+  /** POST /api/auth/password-reset-confirm — set a new password with the emailed token. */
+  confirmPasswordReset: async (payload: PasswordResetConfirmPayload): Promise<void> => {
+    await apiClient.post<ApiEnvelope<unknown>>("/auth/password-reset-confirm", payload);
   },
 };

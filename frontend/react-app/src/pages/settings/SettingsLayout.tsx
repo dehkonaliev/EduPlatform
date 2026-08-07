@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { GraduationCap, ShieldCheck, SlidersHorizontal, User } from "lucide-react";
+import { GraduationCap, KeyRound, ShieldCheck, SlidersHorizontal, User } from "lucide-react";
 import { AppNavbar } from "../../AppNavbar";
 import { useAuth } from "../../providers/AuthProvider";
 import { cn } from "../../lib/utils";
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: "/settings/profile", label: "Profile", icon: User },
   { to: "/settings/student", label: "Student details", icon: GraduationCap, studentOnly: true },
   { to: "/settings/preferences", label: "Preferences", icon: SlidersHorizontal },
+  { to: "/settings/passwords", label: "Passwords", icon: KeyRound },
   { to: "/settings/account", label: "Security", icon: ShieldCheck },
 ];
 

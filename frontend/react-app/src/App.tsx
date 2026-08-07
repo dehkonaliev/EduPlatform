@@ -6,6 +6,8 @@ import { ToastProvider } from "./providers/ToastProvider";
 import HomePage from "./pages/Home";
 import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Signup";
+import PasswordResetPage from "./pages/auth/PasswordReset";
+import ResetPasswordPage from "./pages/auth/ResetPassword";
 import ProfilePage from "./pages/Profile";
 import CourseDetailPage from "./pages/CourseDetail";
 import MyLearningPage from "./pages/MyLearning";
@@ -14,6 +16,7 @@ import SettingsLayout from "./pages/settings/SettingsLayout";
 import ProfileSection from "./pages/settings/ProfileSection";
 import StudentSection from "./pages/settings/StudentSection";
 import PreferencesSection from "./pages/settings/PreferencesSection";
+import PasswordSection from "./pages/settings/PasswordSection";
 import AccountSection from "./pages/settings/AccountSection";
 import SubscriptionsPage from "./pages/Subscriptions";
 import TransactionsPage from "./pages/Transactions";
@@ -28,6 +31,8 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/password-reset" element={<PasswordResetPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route path="/courses/:id" element={<CourseDetailPage />} />
               <Route
                 path="/my-learning"
@@ -65,6 +70,7 @@ export default function App() {
                 <Route path="profile" element={<ProfileSection />} />
                 <Route path="student" element={<StudentSection />} />
                 <Route path="preferences" element={<PreferencesSection />} />
+                <Route path="passwords" element={<PasswordSection />} />
                 <Route path="account" element={<AccountSection />} />
               </Route>
               <Route

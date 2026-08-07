@@ -15,6 +15,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return course
     
     def validate_rating(self, rating):
+        if not rating:
+            return field_error("rating", "Rating cannot be null")
         if rating > 5:
             return field_error("rating", "Rating must be between 1 and 5")
         if rating < 1:
@@ -41,11 +43,7 @@ class CourseMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'thumbnail']
 
     
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = ['id', 'rating', 'comment']
-        read_only_fields = fields
+
         
 class MyReviewSerializer(serializers.ModelSerializer):
     course = CourseMinimalSerializer()

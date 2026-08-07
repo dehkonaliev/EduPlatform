@@ -113,3 +113,33 @@ export interface VerifyPhoneResponseData {
 export interface AccountDeletionRequestData {
   verify_type: VerifyType;
 }
+
+// --- Password flows ---
+
+/**
+ * POST /api/auth/password-change — change the password while signed in.
+ * Fields match the backend PasswordChangeSerializer (old_password,
+ * new_password, conf_password).
+ */
+export interface PasswordChangePayload {
+  old_password: string;
+  new_password: string;
+  conf_password: string;
+}
+
+/** POST /api/auth/password-reset-request — an email or verified phone number. */
+export interface PasswordResetRequestPayload {
+  email_or_phone: string;
+}
+
+export interface PasswordResetRequestResponseData {
+  email?: string;
+  phone_number?: string;
+}
+
+/** POST /api/auth/password-reset-confirm — token from the emailed reset link. */
+export interface PasswordResetConfirmPayload {
+  token: string;
+  new_password: string;
+  conf_password: string;
+}

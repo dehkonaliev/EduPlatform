@@ -6,6 +6,7 @@ import { LEVEL_META } from "../features/courses/constants";
 import { RatingStars } from "../features/courses/components/RatingStars";
 import { CourseCurriculum } from "../features/courses/components/CourseCurriculum";
 import { CourseSidebar } from "../features/courses/components/CourseSidebar";
+import { CourseReviewsSection } from "../features/reviews/components/CourseReviewsSection";
 import { resolveMediaUrl } from "../lib/media";
 import { getYouTubeEmbedUrl } from "../lib/youtube";
 
@@ -159,6 +160,8 @@ function CourseDetailBody({
           )}
 
           <CourseCurriculum modules={course.modules} />
+
+          <CourseReviewsSection courseId={courseId} />
         </div>
 
         {/* Sidebar */}

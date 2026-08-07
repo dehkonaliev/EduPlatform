@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.conf import settings
 from .models import CustomUser, UserPreference
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
@@ -9,7 +10,7 @@ from payments.models import StudentWallet
 import re
 from baseapp.models import MyToken
 from baseapp.utils import field_error, success_response, error_response
-from baseapp.emails import send_verification_code
+from baseapp.emails import send_password_reset_link
 from rest_framework_simplejwt.tokens import RefreshToken
 from .validators import name_validator, username_validator, password_validator
 from .utils import (check_email_username_phone, check_code, generate_mytoken, is_expired_code,
@@ -364,21 +365,25 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             user = CustomUser.objects.filter(email=email_or_phone).first()
             if not user:
                 return field_error("email_or_phone", "User not found!")
-            if user and user.email_verified == False:
-                return field_error("email_or_phone", "Email was not verified try with phone number!")
+            if not user.email_verified:
+                return field_error("email_or_phone", "Email was not verified, try with phone number!")
             
             my_token = generate_mytoken(user, "RESET_PASSWORD")
-            reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
+            reset_link = f"{settings.FRONTEND_URL}/reset-password/{my_token.token}/"
+            send_password_reset_link(user.email, reset_link)
             
         elif verify_type == "VIA_PHONE":
-                    user = CustomUser.objects.filter(phone_number=email_or_phone).first()
-                    if not user:
-                        return field_error("email_or_phone", "User not found!")
-                    if user and user.email_verified == False:
-                        return field_error("phone_number","Phone number was not verified try with email!")
-                    
-                    my_token = generate_mytoken(user, "RESET_PASSWORD")
-                    reset_link = f"https://yourfrontend.com/reset-password/{my_token}/"
+            user = CustomUser.objects.filter(phone_number=email_or_phone).first()
+            if not user:
+                return field_error("email_or_phone", "User not found!")
+            if not user.phone_verified:
+                return field_error("phone_number", "Phone number was not verified, try with email!")
+            
+            my_token = generate_mytoken(user, "RESET_PASSWORD")
+            reset_link = f"{settings.FRONTEND_URL}/reset-password/{my_token.token}/"
+                
+        else:
+            return field_error("email_or_phone", "Enter a valid email or phone number!")
         
         attrs['verify_type'] = verify_type
         return attrs
@@ -398,7 +403,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             return field_error("conf_password", "Confirm password does not match!")
         token_obj = MyToken.objects.filter(token=token, is_used=False).first()
         if not token_obj:
-            return error_response(message="Invalid token!")
+            return field_error("token", "Invalid token!")
         if not token_obj.is_valid():
             return field_error("token","Token expired!")
         user = token_obj.user

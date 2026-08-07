@@ -151,6 +151,9 @@ AUTH_USER_MODEL = 'authentication.CustomUser'
 EMAIL_EXPIRATION_TIME = 100
 PHONE_EXPIRATION_TIME = 100
 
+# Where password-reset links in emails point (the frontend app).
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

@@ -14,6 +14,18 @@ def send_verification_code(user_email, code):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
     
+def send_password_reset_link(user_email, link):
+    subject = "Your password reset link!"
+    
+    html_content = render_to_string('emails/password_reset.html', {'link': link})
+    
+    text_content = strip_tags(html_content) 
+
+    msg = EmailMultiAlternatives(subject, text_content, None, [user_email])
+    
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+    
 def send_notification(user_email, message, data=None):
     subject = message
     
