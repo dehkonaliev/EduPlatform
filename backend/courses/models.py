@@ -127,4 +127,3 @@ class Lesson(BaseModel):
         return f"{self.module.title} {self.title}"
 
     
-    

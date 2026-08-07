@@ -284,6 +284,11 @@ class PreferenceUpdateAPIView(APIView):
         serializer.save()
         
         return success_response(message="User preference", data=serializer.data)
+    
+    def get(self, request):
+            serializer = UserPreferenceSerializer(request.user.preference)
+            
+            return success_response(message="User preference", data=serializer.data)
         
             
         

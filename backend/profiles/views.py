@@ -17,14 +17,13 @@ class StudentProfileAPIView(APIView):
         if not profile:
             return error_response(message="Student profile not found", status_code=404)
         
-        self.check_object_permissions(request, profile)
         
         serializer = StudentProfileSerializer(profile)
         
         return success_response(message="Student profile retreived", data=serializer.data)
     
     def patch(self, request):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        profile = StudentProfile.objects.filter(student=request.user).first()
         if not profile:
             return error_response(message="Student profile not found", status_code=404)
         

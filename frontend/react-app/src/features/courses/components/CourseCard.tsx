@@ -1,14 +1,8 @@
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 import { resolveMediaUrl } from "../../../lib/media";
-import { cn } from "../../../lib/utils";
+import { LEVEL_META } from "../constants";
+import { RatingStars } from "./RatingStars";
 import type { CourseSummary } from "../types";
-
-const LEVEL_LABEL: Record<string, string> = {
-  BEGINNER: "Beginner",
-  INTERMEDIATE: "Intermediate",
-  ADVANCED: "Advanced",
-};
 
 interface CourseCardProps {
   course: CourseSummary;
@@ -18,10 +12,11 @@ export function CourseCard({ course }: CourseCardProps) {
   const thumbnailUrl = resolveMediaUrl(course.thumbnail);
   const instructorPhotoUrl = resolveMediaUrl(course.instructor.photo);
   const rating = Number.parseFloat(course.average_rating);
+  const levelMeta = LEVEL_META[course.level];
 
   return (
     <Link
-      to={`/courses/${course.slug}`}
+      to={`/courses/${course.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-paper-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-ink-950/5 dark:border-ink-800 dark:bg-ink-900 dark:hover:shadow-black/20"
     >
       {/* Thumbnail — falls back to a branded gradient + initial when null */}
@@ -46,8 +41,9 @@ export function CourseCard({ course }: CourseCardProps) {
             </span>
           </div>
         )}
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-medium text-paper-50 backdrop-blur-sm">
-          {LEVEL_LABEL[course.level] ?? course.level}
+        <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-medium text-paper-50 backdrop-blur-sm">
+          <levelMeta.icon size={11} />
+          {levelMeta.label}
         </span>
       </div>
 
@@ -70,25 +66,7 @@ export function CourseCard({ course }: CourseCardProps) {
         </div>
 
         {course.rating_count > 0 && (
-          <div className="flex items-center gap-1 text-xs">
-            <span className="font-semibold text-ember-600 dark:text-ember-400">
-              {rating.toFixed(1)}
-            </span>
-            <div className="flex" aria-hidden="true">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Star
-                  key={index}
-                  size={11}
-                  className={cn(
-                    index < Math.round(rating)
-                      ? "fill-ember-400 text-ember-400"
-                      : "fill-transparent text-ink-300 dark:text-ink-600",
-                  )}
-                />
-              ))}
-            </div>
-            <span className="text-ink-500 dark:text-ink-400">({course.rating_count})</span>
-          </div>
+          <RatingStars rating={rating} count={course.rating_count} size={11} />
         )}
       </div>
     </Link>

@@ -8,7 +8,7 @@ from django.db.models import Q
 from baseapp.utils import success_response, error_response
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer, CourseDetailForStuSerializer
+    LessonDetailSerializer, CourseInfoSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
@@ -71,8 +71,6 @@ class CourseDetailAPIView(APIView):
         self.check_object_permissions(request, course)
         
         serializer = CourseDetailSerializer(course)
-        if request.user.is_authenticated and request.user.user_role == "STUDENT":
-            serializer = CourseDetailForStuSerializer(course, context={'request': request})
         return success_response(message="Course detail", data=serializer.data)
 
 
@@ -170,7 +168,7 @@ class LessonDetailAPIView(APIView):
         lesson = Lesson.objects.filter(pk=pk).first()
         if not lesson:
             return error_response(message="Lesson not found", status_code=404)
-        if not request.user.is_authenticated and lesson.module.course.status != Course.Status.PUBLISHED:
+        if lesson.module.course.status != Course.Status.PUBLISHED:
             return error_response(message="Lesson not found", status_code=404)
         
         self.check_object_permissions(request, lesson.module.course)

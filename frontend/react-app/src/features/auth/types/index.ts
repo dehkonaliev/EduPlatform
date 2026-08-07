@@ -24,6 +24,7 @@ export interface AccountProfile {
   phone_number: string | null;
   first_name: string;
   last_name: string;
+  username: string;
   user_role: UserRole;
   auth_type: AuthType;
   account_status: AccountStatus;
@@ -81,4 +82,15 @@ export interface ActivateResponseData {
   last_name: string;
   username: string;
   user_role: UserRole;
+}
+
+// --- Edit profile: PATCH /api/auth/update-profile ---
+// Serializer fields: id (read-only), first_name, last_name, username, photo.
+
+export interface UpdateProfileResponseData {
+  id: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  photo: string | null;
 }
