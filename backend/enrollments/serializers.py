@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from .models import Enrollment, LessonProgress
-from baseapp.utils import field_error, XP_QUANTITY
+from baseapp.utils import field_error, XP_QUANTITY, interest_recorder
 from courses.models import Lesson
-from courses.serializers import CourseMinimalSerializer
+from courses.serializers import CourseInfoSerializer
 from profiles.models import StudentProfile
 
 
@@ -32,6 +32,8 @@ class EnrollmentCreateSerializer(serializers.ModelSerializer):
         course = validated_data['course']
         lesson = Lesson.objects.filter(module__course=course).order_by('order').first()
         LessonProgress.objects.create(enrollment=enrollment, lesson=lesson)
+        interest_recorder(student, course.tags)
+        
         
         return enrollment
     
@@ -90,8 +92,14 @@ class LastLessonSerializer(serializers.ModelSerializer):
 
 
 class EnrolledCourseSerializer(serializers.ModelSerializer):
-    course = CourseMinimalSerializer()
+    course = CourseInfoSerializer()
+    first_lesson = serializers.SerializerMethodField()
     class Meta:
         model = Enrollment
-        fields = ['id', 'course', 'is_bought', 'progress_percentage', 'last_accessed_lesson', 'last_accessed_at', 'enrolled_at', 'completed_at']
+        fields = ['id', 'course', 'status', 'first_lesson', 'is_bought', 'progress_percentage', 'last_accessed_lesson', 'last_accessed_at', 'enrolled_at', 'completed_at']
         read_only_fields = fields
+
+    def get_first_lesson(self, obj):
+        module = obj.course.modules.order_by('order').first()
+        lesson = module.lessons.order_by('order').first() if module else None
+        return str(lesson.pk) if lesson else None

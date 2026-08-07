@@ -6,7 +6,6 @@ from baseapp.utils import error_response, success_response, XP_QUANTITY
 from baseapp.permissions import IsStudentAndOwner
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import CustomUser
-from django.db.models import Q
 from django.utils import timezone
 from .serializers import (EnrollmentCreateSerializer, ProgressCreateSerializer, LastLessonSerializer, EnrolledCourseSerializer
 )
@@ -102,7 +101,19 @@ class MyEnrollmentsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsStudentAndOwner]
     def get(self, request):
         user = request.user
-        enrollments = user.enrollments.filter(Q(status="ACTIVE") | Q(status="COMPELTED"))
+        enrollments = user.enrollments.all()
+        
+        status = request.query_params.get('status')
+        if status:
+            status = status.upper()
+            if status not in Enrollment.Status.values:
+                return error_response(
+                    message="Invalid status",
+                    errors={'status': f'Status must be one of: {", ".join(Enrollment.Status.values)}'},
+                    status_code=400,
+                )
+            enrollments = enrollments.filter(status=status)
+            
         serializer = EnrolledCourseSerializer(enrollments, many=True)
         
         return success_response(message="Enrolled courses", data=serializer.data)

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BarChart3, Loader2, ShoppingCart, Star, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { BarChart3, GraduationCap, Loader2, PlayCircle, ShoppingCart, Star, Users } from "lucide-react";
 import { resolveMediaUrl } from "../../../lib/media";
 import { parseApiError } from "../../../lib/api/parseApiError";
 import { useToast } from "../../../providers/ToastProvider";
@@ -29,6 +30,11 @@ export function CourseSidebar({ courseId, course }: CourseSidebarProps) {
 
   const thumbnailUrl = resolveMediaUrl(course.thumbnail);
   const isBuyFlow = course.pricing_type === "SPECIAL";
+
+  // Resume at the lesson the student left off; on a fresh enrollment there's
+  // no last-accessed lesson yet, so jump to the very first lesson instead.
+  const firstLessonId = course.modules[0]?.lessons[0]?.id ?? null;
+  const resumeLessonId = course.last_accessed_lesson ?? firstLessonId;
 
   async function handleClick() {
     if (!user) {
@@ -73,19 +79,47 @@ export function CourseSidebar({ courseId, course }: CourseSidebarProps) {
           {formatPrice(course)}
         </span>
 
-        <button
-          type="button"
-          onClick={handleClick}
-          disabled={isSubmitting || isEnrolled}
-          className={cn(
-            "flex items-center justify-center gap-2 rounded-full bg-ink-900 py-3 text-sm font-semibold text-paper-50 transition-colors hover:bg-ink-800 disabled:cursor-not-allowed disabled:opacity-70",
-            "dark:bg-ember-400 dark:text-ink-950 dark:hover:bg-ember-300",
-          )}
-        >
-          {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-          {!isSubmitting && <ShoppingCart size={16} />}
-          {isEnrolled ? "Enrolled" : isSubmitting ? "Please wait..." : isBuyFlow ? "Buy Course" : "Enroll Course"}
-        </button>
+        {isEnrolled ? (
+          <div className="flex flex-col gap-2">
+            {resumeLessonId ? (
+              <Link
+                to={`/learn/${resumeLessonId}`}
+                className="flex items-center justify-center gap-2 rounded-full bg-teal-500/10 py-3 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-500/20 dark:text-teal-400 dark:hover:bg-teal-500/20"
+              >
+                <PlayCircle size={16} />
+                {course.last_accessed_lesson ? "Continue learning" : "Start learning"}
+              </Link>
+            ) : (
+              <Link
+                to="/my-learning"
+                className="flex items-center justify-center gap-2 rounded-full bg-teal-500/10 py-3 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-500/20 dark:text-teal-400 dark:hover:bg-teal-500/20"
+              >
+                <GraduationCap size={16} />
+                Go to My Learning
+              </Link>
+            )}
+            <Link
+              to="/my-learning"
+              className="text-center text-xs font-medium text-ink-500 transition-colors hover:text-ember-600 dark:text-ink-300 dark:hover:text-ember-400"
+            >
+              Go to My Learning
+            </Link>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleClick}
+            disabled={isSubmitting}
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-full bg-ink-900 py-3 text-sm font-semibold text-paper-50 transition-colors hover:bg-ink-800 disabled:cursor-not-allowed disabled:opacity-70",
+              "dark:bg-ember-400 dark:text-ink-950 dark:hover:bg-ember-300",
+            )}
+          >
+            {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+            {!isSubmitting && <ShoppingCart size={16} />}
+            {isSubmitting ? "Please wait..." : isBuyFlow ? "Buy Course" : "Enroll Course"}
+          </button>
+        )}
 
         <div className="flex flex-col gap-2 border-t border-paper-200 pt-4 text-sm text-ink-600 dark:border-ink-800 dark:text-ink-300">
           <div className="flex items-center gap-2">

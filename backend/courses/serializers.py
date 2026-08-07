@@ -311,10 +311,11 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     modules = ModuleMinimalSerializer(many=True, read_only=True)
     instructor = InstructorMiniSerializer()
     is_enrolled = serializers.SerializerMethodField()
+    last_accessed_lesson = serializers.SerializerMethodField()
     class Meta:
         model = Course
         fields = [
-            'instructor', 'is_enrolled', 'title', 'slug', 'subtitle', 'description', 'category',
+            'instructor', 'is_enrolled', 'last_accessed_lesson', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
             'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
             'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules'
@@ -327,14 +328,62 @@ class CourseDetailSerializer(serializers.ModelSerializer):
                 return True
         return False
         
+    def get_last_accessed_lesson(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            enrollment = user.enrollments.filter(course=obj).first()
+            if enrollment and enrollment.last_accessed_lesson_id:
+                return str(enrollment.last_accessed_lesson_id)
+        return None
+        
         
 # LESSON DETAIL
+class LessonCurriculumModuleSerializer(serializers.ModelSerializer):
+    lessons = LessonSerializer(many=True, read_only=True)
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'order', 'lessons']
+
+class LessonCurriculumSerializer(serializers.ModelSerializer):
+    modules = LessonCurriculumModuleSerializer(many=True, read_only=True)
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'slug', 'modules']
+
 class LessonDetailSerializer(serializers.ModelSerializer):
     module = ModuleMinimalSerializer(read_only=True)
+    curriculum = serializers.SerializerMethodField()
+    progress_id = serializers.SerializerMethodField()
+    progress_completed = serializers.SerializerMethodField()
+    quiz = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module']
+        fields = ['id', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module', 'curriculum', 'progress_id', 'progress_completed', 'quiz']
         read_only_fields = fields
+        
+    def get_curriculum(self, obj):
+        return LessonCurriculumSerializer(obj.module.course).data
+
+    def _get_progress(self, obj):
+        user = self.context.get('request').user
+        if not (user and user.is_authenticated):
+            return None
+        enrollment = user.enrollments.filter(course=obj.module.course).first()
+        if not enrollment:
+            return None
+        return enrollment.lessons_progress.filter(lesson=obj).first()
+
+    def get_progress_id(self, obj):
+        progress = self._get_progress(obj)
+        return str(progress.pk) if progress else None
+
+    def get_progress_completed(self, obj):
+        progress = self._get_progress(obj)
+        return bool(progress and progress.is_completed)
+
+    def get_quiz(self, obj):
+        quiz = getattr(obj, 'quiz', None)
+        return str(quiz.pk) if quiz else None
         
 
 # COURSE INFO

@@ -1,29 +1,8 @@
 import { useState } from "react";
-import {
-  ChevronDown,
-  ClipboardList,
-  FileText,
-  HelpCircle,
-  Lock,
-  PlayCircle,
-  Sparkles,
-} from "lucide-react";
+import { ChevronDown, FileText, Lock, Sparkles } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import type { CourseModule, LessonType } from "../types";
-
-const LESSON_TYPE_ICON: Record<LessonType, typeof PlayCircle> = {
-  VIDEO: PlayCircle,
-  ARTICLE: FileText,
-  QUIZ: HelpCircle,
-  ASSIGNMENT: ClipboardList,
-};
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return rest > 0 ? `${hours}h ${rest}m` : `${hours}h`;
-}
+import { LESSON_TYPE_ICON, formatDuration } from "../constants";
+import type { CourseModule } from "../types";
 
 interface CourseCurriculumProps {
   modules: CourseModule[];

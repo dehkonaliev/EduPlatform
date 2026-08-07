@@ -74,6 +74,8 @@ export function EditProfileForm() {
     event.preventDefault();
     setGeneralError(null);
 
+    if (!user) return;
+
     const errors: Record<string, string> = {};
     if (!firstName.trim()) errors.first_name = "First name is required.";
     if (!lastName.trim()) errors.last_name = "Last name is required.";

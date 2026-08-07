@@ -1,5 +1,6 @@
 import { apiClient } from "../../../lib/api/client";
 import type {
+  AccountDeletionRequestData,
   AccountProfile,
   ActivatePayload,
   ActivateResponseData,
@@ -12,6 +13,9 @@ import type {
   UserPreference,
   VerifyCodePayload,
   VerifyCodeResponseData,
+  VerifyEmailResponseData,
+  VerifyPhoneResponseData,
+  VerifyType,
 } from "../types";
 
 export interface UpdateProfilePayload {
@@ -101,5 +105,64 @@ export const authApi = {
       payload,
     );
     return data.data;
+  },
+
+  // --- Contact verification (note: backend URLs are "veirfy-email"/"veirfy-phone") ---
+  // The same endpoint handles both steps, distinguished by payload:
+  //   POST { email | phone_number } → saves the value and sends a 6-digit code
+  //   POST { code }                 → confirms the code, marks it verified
+
+  /** POST /api/auth/veirfy-email — saves the email and sends a code to it. */
+  requestEmailVerification: async (email: string): Promise<VerifyEmailResponseData> => {
+    const { data } = await apiClient.post<ApiEnvelope<VerifyEmailResponseData>>(
+      "/auth/veirfy-email",
+      { email },
+    );
+    return data.data;
+  },
+
+  /** POST /api/auth/veirfy-email — confirms the code, marks the email verified. */
+  verifyEmailCode: async (code: string): Promise<VerifyEmailResponseData> => {
+    const { data } = await apiClient.post<ApiEnvelope<VerifyEmailResponseData>>(
+      "/auth/veirfy-email",
+      { code },
+    );
+    return data.data;
+  },
+
+  /** POST /api/auth/veirfy-phone — saves the phone and queues a Telegram code. */
+  requestPhoneVerification: async (phoneNumber: string): Promise<VerifyPhoneResponseData> => {
+    const { data } = await apiClient.post<ApiEnvelope<VerifyPhoneResponseData>>(
+      "/auth/veirfy-phone",
+      { phone_number: phoneNumber },
+    );
+    return data.data;
+  },
+
+  /** POST /api/auth/veirfy-phone — confirms the code, marks the phone verified. */
+  verifyPhoneCode: async (code: string): Promise<VerifyPhoneResponseData> => {
+    const { data } = await apiClient.post<ApiEnvelope<VerifyPhoneResponseData>>(
+      "/auth/veirfy-phone",
+      { code },
+    );
+    return data.data;
+  },
+
+  // --- Delete account (code required, from a verified email or phone) ---
+
+  /** POST /api/auth/delete-account — sends the deletion code over the chosen channel. */
+  requestAccountDeletion: async (verifyType: VerifyType): Promise<AccountDeletionRequestData> => {
+    const { data } = await apiClient.post<ApiEnvelope<AccountDeletionRequestData>>(
+      "/auth/delete-account",
+      { verify_type: verifyType },
+    );
+    return data.data;
+  },
+
+  /** POST /api/auth/delete-account — confirms the code and deletes the account. */
+  confirmAccountDeletion: async (verificationCode: string): Promise<void> => {
+    await apiClient.post<ApiEnvelope<unknown>>("/auth/delete-account", {
+      verification_code: verificationCode,
+    });
   },
 };

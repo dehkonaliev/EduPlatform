@@ -8,10 +8,15 @@ import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Signup";
 import ProfilePage from "./pages/Profile";
 import CourseDetailPage from "./pages/CourseDetail";
+import MyLearningPage from "./pages/MyLearning";
+import LessonPage from "./pages/Lesson";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ProfileSection from "./pages/settings/ProfileSection";
 import StudentSection from "./pages/settings/StudentSection";
 import PreferencesSection from "./pages/settings/PreferencesSection";
+import AccountSection from "./pages/settings/AccountSection";
+import SubscriptionsPage from "./pages/Subscriptions";
+import TransactionsPage from "./pages/Transactions";
 
 export default function App() {
   return (
@@ -24,6 +29,22 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/courses/:id" element={<CourseDetailPage />} />
+              <Route
+                path="/my-learning"
+                element={
+                  <RequireAuth>
+                    <MyLearningPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/learn/:lessonId"
+                element={
+                  <RequireAuth>
+                    <LessonPage />
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="/profile"
                 element={
@@ -44,7 +65,24 @@ export default function App() {
                 <Route path="profile" element={<ProfileSection />} />
                 <Route path="student" element={<StudentSection />} />
                 <Route path="preferences" element={<PreferencesSection />} />
+                <Route path="account" element={<AccountSection />} />
               </Route>
+              <Route
+                path="/subscriptions"
+                element={
+                  <RequireAuth>
+                    <SubscriptionsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/transactions"
+                element={
+                  <RequireAuth>
+                    <TransactionsPage />
+                  </RequireAuth>
+                }
+              />
               {/* Add /my-learning, /courses/:slug, /certificates, etc. as those pages get built */}
             </Routes>
           </BrowserRouter>

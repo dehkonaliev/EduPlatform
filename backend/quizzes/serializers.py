@@ -134,21 +134,24 @@ class GetQuizSerializer(serializers.ModelSerializer):
 
 class QuizAttemptSerializer(serializers.ModelSerializer):
     response = serializers.ListField(write_only=True)
+    correct_count = serializers.SerializerMethodField()
     class Meta:
         model = QuizAttempt
-        fields = ['response', 'score']
-        read_only_fields = ['score']
+        fields = ['response', 'score', 'correct_count']
+        read_only_fields = ['score', 'correct_count']
+        extra_kwargs = {'score': {'coerce_to_string': False}}
         
     def validate_response(self, response):
         quiz = self.context.get('quiz')
+        if not isinstance(response, list):
+            return field_error("response", "Response must be a list")
         if len(response) != quiz.questions.count():
-            return field_error("response", "Response contains more or less questions in it")
-        if not isinstance(data, list):
-            return field_error("response", "Response must be list")
+            return field_error("response", "Response must contain an answer for every question in the quiz")
         
         return response
         
-        
+    def get_correct_count(self, obj):
+        return getattr(obj, '_correct_count', 0)
         
     def save(self, **kwargs):
         response = self.validated_data.get('response')
@@ -158,41 +161,48 @@ class QuizAttemptSerializer(serializers.ModelSerializer):
         for answer in response:
             try:
                 question_id = uuid.UUID(str(answer['question_id']))
-            except:
-                return field_error("response", "Response contains invalid data 1")
+            except (KeyError, ValueError, TypeError):
+                return field_error("response", "Response contains invalid data")
             try:
                 selected_options = answer['selected_options']
-            except:
-                return field_error("response", f"No selected options on {question}")
-            question = questions.filter(pk=answer['question_id']).first()
+            except KeyError:
+                return field_error("response", "Response is missing selected_options for a question")
+            if not isinstance(selected_options, list):
+                return field_error("response", "selected_options must be a list")
+            question = questions.filter(pk=question_id).first()
             if not question:
-                return field_error("reponse", "Response contains invalid data 1")
+                return field_error("response", "Response contains a question that is not part of this quiz")
             if question.question_type == "RADIO":
                 correct_option = question.options.filter(is_correct=True).first()
                 if not correct_option:
-                    return field_error("response", "No correct answers found 1") 
-                if len(selected_options) > 0 and selected_options[0] == str(correct_option.pk):
+                    return field_error("response", "No correct answer found for a question")
+                if len(selected_options) == 1 and str(selected_options[0]) == str(correct_option.pk):
                     counter += 1
             elif question.question_type == "CHECKBOX":
                 correct_options = question.options.filter(is_correct=True)
-                if len(correct_options) < 1:    
-                    return field_error("response", "No correct answers found")
+                if len(correct_options) < 1:
+                    return field_error("response", "No correct answers found for a question")
                 correct = set(str(pk) for pk in correct_options.values_list('pk', flat=True))
-                selected = set(map(str, selected_options))
+                selected = set(str(pk) for pk in selected_options)
                 if selected == correct:
                     counter += 1
             elif question.question_type == "TEXT":
                 correct_option = question.options.filter(is_correct=True).first()
                 if not correct_option:
-                    return field_error("response", "No correct answers found")
-                if len(selected_options) > 0 and  correct_option.option == selected_options[0]:
+                    return field_error("response", "No correct answer found for a question")
+                if len(selected_options) > 0 and correct_option.option.strip().lower() == str(selected_options[0]).strip().lower():
                     counter += 1
-        score = round(Decimal(counter) / Decimal(len(questions)) * 100, 2)
+        total = len(questions)
+        score = round(Decimal(counter) / Decimal(total) * 100, 2) if total else Decimal("0.00")
         student = self.context.get('user')
         attempt = QuizAttempt.objects.create(score=score, quiz=quiz, student=student)
+        attempt._correct_count = counter
+        self.instance = attempt
+        
         profile = StudentProfile.objects.filter(student=student).first()
-        profile.xp = profile.xp +  score * (XP_QUANTITY + 3 * profile.level) // 100
-        profile.save(update_fields=['xp'])
+        if profile:
+            profile.xp = profile.xp + int(score * (XP_QUANTITY + 3 * profile.level) // 100)
+            profile.save(update_fields=['xp'])
         
         return attempt
         

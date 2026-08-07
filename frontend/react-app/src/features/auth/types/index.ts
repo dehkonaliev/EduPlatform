@@ -4,6 +4,8 @@ export type UserRole = "STUDENT" | "INSTRUCTOR" | "SUPERUSER";
 export type AuthType = "EMAIL" | "PHONE" | "GOOGLE";
 export type AccountStatus = "PENDING" | "ACTIVE" | "SUSPENDED" | "BLOCKED" | "DELETED";
 export type ThemeMode = "LIGHT" | "DARK" | "SYSTEM";
+/** Which channel a verification code is delivered through. */
+export type VerifyType = "VIA_EMAIL" | "VIA_PHONE";
 
 /** From the UserPreference model — nested inside AccountProfile.user_preference. */
 export interface UserPreference {
@@ -93,4 +95,21 @@ export interface UpdateProfileResponseData {
   last_name: string;
   username: string;
   photo: string | null;
+}
+
+// --- Verification & account deletion ---
+// GET /auth/veirfy-email (sic — backend URL typo) sends a code to an email;
+// POST /auth/veirfy-email confirms it. Same shape for /auth/veirfy-phone.
+
+export interface VerifyEmailResponseData {
+  email: string;
+}
+
+export interface VerifyPhoneResponseData {
+  phone_number: string;
+}
+
+/** GET /auth/delete-account body + response data. */
+export interface AccountDeletionRequestData {
+  verify_type: VerifyType;
 }

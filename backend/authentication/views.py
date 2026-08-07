@@ -136,113 +136,135 @@ class PasswordChangeAPIView(APIView):
         
 class DeleteAccountAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request):
+    def post(self, request):
         user = request.user
-        veirfy_type = request.data.get('verify_type')
-        if veirfy_type == "VIA_EMAIL":
+
+        # Confirm the deletion with the code we sent earlier.
+        if 'verification_code' in request.data:
+            code = request.data.get('verification_code')
+            if not code or not code.isdigit() or len(code) != 6:
+                return field_error("code", "Invalid code!")
+            verification = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
+            if not verification:
+                return field_error("code", "Invalid code!")
+            elif verification.expire_time < timezone.now():
+                return field_error("code", "Verification code expired!")
+
+            verification.is_used = True
+            verification.save()
+            user.account_status = CustomUser.AccountStatus.DELETED
+            user.save()
+
+            return success_response(message="Account set deleted")
+
+        # Send a verification code over the requested verified channel.
+        verify_type = request.data.get('verify_type')
+        if verify_type == "VIA_EMAIL":
             if not user.email_verified:
                 return error_response(message="You cannot delete your account via email. Your email is not verified!")
-            
+
             is_expired_code(user)
-            code = generate_code(user, veirfy_type)
+            code = generate_code(user, verify_type)
             send_verification_code(user.email, code)
-            
+
             return success_response(
                 message="We have sent the verification code to your email. Please verify your email!",
                 data={"verify_type": "VIA_EMAIL"}
             )
-        elif veirfy_type == "VIA_PHONE":
-            if not user.email_verified:
+        elif verify_type == "VIA_PHONE":
+            if not user.phone_verified:
                 return error_response(message="You cannot delete your account via phone. Your phone number is not verified!")
-            
+
             is_expired_code(user)
-            code = generate_code(user, veirfy_type)
-            
+            code = generate_code(user, verify_type)
+
             return success_response(
                 message="You can get the verification code in telegram!",
                 data={"verify_type": "VIA_PHONE"}
             )
         else:
             return error_response(message="Invalid verify type!")
-    
-    def post(self, request):
-        user = request.user
-        code = request.data.get('verification_code')
-        code = user.codes.filter(code=code, is_used=False).order_by('-expire_time').first()
-        if not code:
-            return field_error("code", "Invalid code!")
-        elif code.expire_time < timezone.now():
-            return field_error("code", "Verification code expired!")
-        
-        user.account_status = CustomUser.AccountStatus.DELETED
-        user.save()
-        
-        return success_response(message="Account set deleted")
 
 class VerifyEmailAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
+
+    def post(self, request):
         user = request.user
-        serializer = VerifyEmailSerializer(instance=user, data=request.data, context={"user":user})
+
+        # Confirm the code → mark the email verified.
+        if 'code' in request.data:
+            code = request.data.get('code')
+            if not code or not code.isdigit() or len(code) != 6:
+                return field_error("code", "Invalid code!")
+
+            verification = check_code(user, code)
+            verification.is_used = True
+            verification.save()
+
+            user.email_verified = True
+            user.save()
+
+            return success_response(
+                message="Email verified!",
+                data={"email": user.email}
+            )
+
+        # Send a verification code to the (possibly new) email.
+        if 'email' not in request.data:
+            return field_error("email", "Email is required!")
+
+        serializer = VerifyEmailSerializer(instance=user, data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         new_email = serializer.validated_data.get('email')
-        
+
         is_expired_code(user)
         code = generate_code(user, "VIA_EMAIL")
         send_verification_code(new_email, code)
+
         return success_response(
             message="We have sent the verification code to your email, please check it!",
             data={"email": user.email}
         )
-        
-    def post(self, request):
-        user = request.user
-        code = request.data.get('code')
-        if len(code) > 6 and not code.isdigit():
-            return field_error("code", "Invalid code!")
-        
-        verification = check_code(user, code)
-        
-        user.email_verified = True
-        user.save()
-        
-        return success_response(
-            message="Email verified!",
-            data={"email": user.email}
-        )
-        
+
 class VerifyPhoneAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
+
+    def post(self, request):
         user = request.user
-        serializer = VerifyPhoneSerializer(instance=user, data=request.data, context={"user":user})
+
+        # Confirm the code → mark the phone verified.
+        if 'code' in request.data:
+            code = request.data.get('code')
+            if not code or not code.isdigit() or len(code) != 6:
+                return field_error("code", "Invalid code!")
+
+            verification = check_code(user, code)
+            verification.is_used = True
+            verification.save()
+
+            user.phone_verified = True
+            user.save()
+
+            return success_response(
+                message="Your phone number verified!",
+                data={"phone_number": user.phone_number}
+            )
+
+        # Send a verification code for the (possibly new) phone number.
+        if 'phone_number' not in request.data:
+            return field_error("phone_number", "Phone number is required!")
+
+        serializer = VerifyPhoneSerializer(instance=user, data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         new_phone = serializer.validated_data.get('phone_number')
-        
+
         is_expired_code(user)
         code = generate_code(user, "VIA_PHONE")
+
         return success_response(
             message="You can get your code via our telegram bot!",
-            data={"phone_number": user.phone_number}
-        )
-                
-    def post(self, request):
-        user = request.user
-        code = request.data.get('code')
-        if len(code) > 6 and not code.isdigit():
-            return field_error("code","Invalid code!")
-        
-        verification = check_code(user, code)
-        
-        user.phone_verified = True
-        user.save()
-        
-        return success_response(
-            message="Your phone number verified!",
             data={"phone_number": user.phone_number}
         )
 

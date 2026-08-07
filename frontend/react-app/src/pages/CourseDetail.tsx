@@ -7,7 +7,7 @@ import { RatingStars } from "../features/courses/components/RatingStars";
 import { CourseCurriculum } from "../features/courses/components/CourseCurriculum";
 import { CourseSidebar } from "../features/courses/components/CourseSidebar";
 import { resolveMediaUrl } from "../lib/media";
-import { getYouTubeEmbedUrl } from "../lib/Youtube";
+import { getYouTubeEmbedUrl } from "../lib/youtube";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();

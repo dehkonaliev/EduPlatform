@@ -102,10 +102,15 @@ class QuizAttemptAPIView(APIView):
         quiz = Quiz.objects.filter(pk=pk).first()
         if not quiz:
             return error_response(message="Quiz not found", status_code=404)
-        if QuizAttempt.objects.filter(quiz=quiz, student=request.user).count() > 2:
-            return error_response(message="You can have tree trials on every quiz", status_code=403)
+        attempts_count = QuizAttempt.objects.filter(quiz=quiz, student=request.user).count()
+        if attempts_count > 2:
+            return error_response(message="You can have three trials on every quiz", status_code=403)
         serializer = QuizAttemptSerializer(data=request.data, context={'user': request.user, 'quiz': quiz})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return success_response(message="Attempt saved", data=serializer.data, status_code=201)
+        return success_response(message="Attempt saved", data={
+            **serializer.data,
+            'total': quiz.questions.count(),
+            'attempts_left': 2 - attempts_count,
+        }, status_code=201)

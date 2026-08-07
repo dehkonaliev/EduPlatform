@@ -39,7 +39,7 @@ class ReplenishWalletSerializer(serializers.Serializer):
 class PlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
-        fields = ['id', 'name', 'period_days']  
+        fields = ['id', 'name', 'desc', 'period_days', 'price']  
         read_only_fields = fields
 
 class SubscribeSerializer(serializers.ModelSerializer):
@@ -76,6 +76,46 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return subscription
         
         
+class WalletTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletTransaction
+        fields = ['id', 'transaction_type', 'amount', 'created_at']
+        read_only_fields = fields
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    transactions = serializers.SerializerMethodField()
+    class Meta:
+        model = StudentWallet
+        fields = ['id', 'wallet_id', 'balance', 'transactions']
+        read_only_fields = fields
+
+    def get_transactions(self, obj):
+        transactions = obj.wallettransaction_set.order_by('-created_at')
+        return WalletTransactionSerializer(transactions, many=True).data
+
+
+class MySubscriptionSerializer(serializers.ModelSerializer):
+    plan = serializers.SerializerMethodField()
+    is_active = serializers.SerializerMethodField()
+    class Meta:
+        model = Subscription
+        fields = ['id', 'plan', 'created_at', 'expires_at', 'is_active']
+        read_only_fields = fields
+
+    def get_plan(self, obj):
+        return {
+            'id': str(obj.subscription_plan.pk),
+            'name': obj.subscription_plan.name,
+            'desc': obj.subscription_plan.desc,
+            'price': obj.subscription_plan.price,
+            'period_days': obj.subscription_plan.period_days,
+        }
+
+    def get_is_active(self, obj):
+        return obj.is_valid()
+
+
 class BuyCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment

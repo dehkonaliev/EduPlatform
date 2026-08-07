@@ -2,10 +2,12 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Category, Course, Lesson, Module, Tag
 from django.db.models import Count
+from django.utils import timezone
 from enrollments.models import Enrollment
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from baseapp.utils import success_response, error_response
+from baseapp.pagination import CoursePagination
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
     LessonDetailSerializer, CourseInfoSerializer
@@ -175,7 +177,16 @@ class LessonDetailAPIView(APIView):
         if user.user_role == "STUDENT" and not user.enrollments.filter(course=lesson.module.course, status="ACTIVE").exists() and not lesson.is_preview:
             return error_response(message="You have no active enrollment for this courses")
         
-        serializer = LessonDetailSerializer(lesson)
+        # Track where the student left off so "Continue learning" / "Start
+        # learning" can resume at the exact lesson instead of dumping them at
+        # the course overview.
+        enrollment = user.enrollments.filter(course=lesson.module.course).first()
+        if enrollment:
+            enrollment.last_accessed_lesson = lesson
+            enrollment.last_accessed_at = timezone.now()
+            enrollment.save(update_fields=['last_accessed_lesson', 'last_accessed_at'])
+        
+        serializer = LessonDetailSerializer(lesson, context={'request': request})
         return success_response(message="Lesson detail", data=serializer.data)
 
 
@@ -197,8 +208,8 @@ class FilteredCoursesAPIView(APIView):
         if search:
             courses = courses.filter(
                 Q(title__icontains=search) |
-                Q(subtitle__icontains=search |
-                Q(what_included__icontains=search))
+                Q(subtitle__icontains=search) |
+                Q(what_included__icontains=search)
             )
         
         if instructor:
@@ -206,7 +217,7 @@ class FilteredCoursesAPIView(APIView):
         if category:
             courses = courses.filter(category=category)
         if tag:
-            courses = courses.filter(tags__name__icontains=tag)
+            courses = courses.filter(tags__name=tag)
         if level:
             courses = courses.filter(level=level)
         if language:
@@ -219,17 +230,16 @@ class FilteredCoursesAPIView(APIView):
                 courses = courses.filter(average_rating__gte=rating_value)
             except:
                 return error_response(message="Rating must a number")
-            courses = courses.filter(average_rating__gte=rating)
             
-        courses = courses.distinct()
-        
-        serializer = CourseInfoSerializer(courses, many=True)
-        
-        return success_response(message="Filtered courses", data=serializer.data)
+        paginator = CoursePagination()
+        page = paginator.paginate_queryset(courses, request)
+        serializer = CourseInfoSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
     
 class FilteredCoursesInstructorAPIView(APIView):
     permission_classes = [IsInstructorAndOwner]
+    pagination_class = CoursePagination
     def get(self, request):
         
         search = request.query_params.get('search')
@@ -246,8 +256,8 @@ class FilteredCoursesInstructorAPIView(APIView):
         if search:
             courses = courses.filter(
                 Q(title__icontains=search) |
-                Q(subtitle__icontains=search |
-                Q(what_included__icontains=search))
+                Q(subtitle__icontains=search) |
+                Q(what_included__icontains=search)
             )
         
         if instructor:
@@ -268,11 +278,11 @@ class FilteredCoursesInstructorAPIView(APIView):
                 courses = courses.filter(average_rating__gte=rating_value)
             except:
                 return error_response(message="Rating must a number")
-            courses = courses.filter(average_rating__gte=rating)
             
         courses = courses.distinct()
-        
-        serializer = CourseInfoSerializer(courses, many=True)
+        pagination = CoursePagination()
+        page = pagination.paginate_queryset(courses, request)
+        serializer = CourseInfoSerializer(page, many=True)
         
         return success_response(message="Filtered instructor courses", data=serializer.data)
     

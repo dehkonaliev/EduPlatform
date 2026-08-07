@@ -85,4 +85,8 @@ export interface CourseDetail {
   what_included: string;
   modules: CourseModule[];
   is_enrolled: boolean;
+  /** Lesson UUID where the logged-in user left off — null when not enrolled
+   * or when they haven't opened a lesson yet. Use to deep-link "Start
+   * learning" to /learn/<uuid>. */
+  last_accessed_lesson: string | null;
 }

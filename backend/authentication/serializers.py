@@ -316,7 +316,10 @@ class VerifyEmailSerializer(serializers.Serializer):
         user = self.context.get('user')
         if not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
             return field_error("email", "Email is invalid!")
-        base_user = CustomUser.objects.filter(email=email).first()
+        # Exclude the current user: re-sending a code for the email they just
+        # saved is a normal "resend", and must not run base_updater on their
+        # own account (which would wipe the email to a temp placeholder).
+        base_user = CustomUser.objects.filter(email=email).exclude(pk=user.pk).first()
         
         if base_user:
             base_updater(base_user, "VIA_EMAIL")
@@ -335,10 +338,11 @@ class VerifyPhoneSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         phone_number = attrs['phone_number']
+        user = self.context.get('user')
         if not re.fullmatch(r"^\d{9}$", phone_number):
             return field_error("phone_number","Phone number is invalid!")
         
-        base_user = CustomUser.objects.filter(phone_number=phone_number).first()
+        base_user = CustomUser.objects.filter(phone_number=phone_number).exclude(pk=user.pk).first()
         if base_user:
             base_updater(base_user, "VIA_PHONE")
         

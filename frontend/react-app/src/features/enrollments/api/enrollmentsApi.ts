@@ -1,8 +1,7 @@
 import { apiClient } from "../../../lib/api/client";
 import type { ApiEnvelope } from "../../../lib/api/types";
+import type { EnrollmentStatus, MyEnrollment } from "../types";
 
-// Response shape not confirmed against a real payload yet — treated as
-// unknown and only used for its envelope message on the toast for now.
 export const enrollmentsApi = {
   /** POST /api/enrollments/enrollment-create — for FREE and MONTHLY (subscription-gated) courses. */
   enrollInCourse: async (courseId: string): Promise<string> => {
@@ -10,5 +9,17 @@ export const enrollmentsApi = {
       course: courseId,
     });
     return data.message;
+  },
+
+  /**
+   * GET /api/enrollments/my-enrollments — passes ?status= when a tab is
+   * selected so the backend filters; omitting it returns every status.
+   */
+  fetchMyEnrollments: async (status?: EnrollmentStatus): Promise<MyEnrollment[]> => {
+    const { data } = await apiClient.get<ApiEnvelope<MyEnrollment[]>>(
+      "/enrollments/my-enrollments",
+      { params: status ? { status } : undefined },
+    );
+    return data.data;
   },
 };
