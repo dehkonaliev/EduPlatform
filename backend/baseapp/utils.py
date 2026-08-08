@@ -44,7 +44,8 @@ def field_error(field, message):
 XP_QUANTITY = 5
 
 def interest_recorder(user, tags):
-    
+    tags = tags.all() if hasattr(tags, 'all') else tags
+
     InterestTag.objects.bulk_create(
         [InterestTag(student=user, tag=tag) for tag in tags],
         ignore_conflicts=True

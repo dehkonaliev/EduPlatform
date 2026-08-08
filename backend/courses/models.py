@@ -66,6 +66,7 @@ class Course(BaseModel):
     class Status(models.TextChoices):
         DRAFT = 'DRAFT', 'Draft'
         IN_REVIEW = 'IN_REVIEW', 'In Review'
+        REJECTED = 'REJECTED', 'Rejected'
         PUBLISHED = 'PUBLISHED', 'Published'
         ARCHIVED = 'ARCHIVED', 'Archived'
         

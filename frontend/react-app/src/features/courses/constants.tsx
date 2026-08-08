@@ -1,5 +1,32 @@
 import { ClipboardList, FileText, Flame, HelpCircle, Layers, PlayCircle, Sprout, TrendingUp } from "lucide-react";
-import type { CourseLevel, LessonType } from "./types";
+import type { CourseLevel, CourseStatus, LessonType, PricingType } from "./types";
+
+/** Badge + label for each publishing-workflow state. */
+export const COURSE_STATUS_META: Record<
+  CourseStatus,
+  { label: string; badgeClassName: string }
+> = {
+  DRAFT: {
+    label: "Draft",
+    badgeClassName: "bg-paper-200 text-ink-600 dark:bg-ink-800 dark:text-ink-300",
+  },
+  IN_REVIEW: {
+    label: "In review",
+    badgeClassName: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  },
+  REJECTED: {
+    label: "Rejected",
+    badgeClassName: "bg-red-500/10 text-red-700 dark:text-red-400",
+  },
+  PUBLISHED: {
+    label: "Published",
+    badgeClassName: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
+  },
+  ARCHIVED: {
+    label: "Archived",
+    badgeClassName: "bg-ink-500/10 text-ink-600 dark:text-ink-300",
+  },
+};
 
 export const LEVEL_META: Record<
   CourseLevel,
@@ -26,6 +53,35 @@ export const LEVEL_META: Record<
     className: "text-ink-600 dark:text-ink-300",
   },
 };
+
+/** Filter dropdown options shared by the student and instructor search pages. */
+export const LEVEL_OPTIONS: { value: CourseLevel; label: string }[] = (
+  Object.keys(LEVEL_META) as CourseLevel[]
+).map((level) => ({ value: level, label: LEVEL_META[level].label }));
+
+export const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "uz", label: "Uzbek" },
+  { value: "ru", label: "Russian" },
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "zh", label: "Chinese" },
+  { value: "ar", label: "Arabic" },
+];
+
+export const PRICING_TYPE_OPTIONS: { value: PricingType; label: string }[] = [
+  { value: "FREE", label: "Free" },
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "SPECIAL", label: "Special" },
+];
+
+export const RATING_OPTIONS: { value: string; label: string }[] = [
+  { value: "3", label: "3.0+ stars" },
+  { value: "4", label: "4.0+ stars" },
+  { value: "4.5", label: "4.5+ stars" },
+  { value: "5", label: "5.0 stars" },
+];
 
 export const LESSON_TYPE_ICON: Record<LessonType, typeof PlayCircle> = {
   VIDEO: PlayCircle,

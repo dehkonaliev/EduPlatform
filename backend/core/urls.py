@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
     path('api/quizzes/', include('quizzes.urls')),
     path('api/reviews/', include('reviews.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:

@@ -6,9 +6,10 @@ import { SearchBar } from "./SearchBar";
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
+  isInstructor?: boolean;
 }
 
-export function MobileMenu({ open, onClose }: MobileMenuProps) {
+export function MobileMenu({ open, onClose, isInstructor = false }: MobileMenuProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -21,7 +22,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         >
           <div className="flex flex-col gap-4 px-4 py-4">
             <div className="flex items-center justify-between">
-              <SearchBar className="max-w-none" />
+              <SearchBar instructorMode={isInstructor} className="max-w-none" />
               <button
                 type="button"
                 onClick={onClose}
@@ -31,13 +32,32 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <X size={18} />
               </button>
             </div>
-            <Link
-              to="/my-learning"
-              onClick={onClose}
-              className="text-sm font-medium text-ink-800 dark:text-paper-50"
-            >
-              My Learning
-            </Link>
+            {isInstructor ? (
+              <>
+                <Link
+                  to="/instructor/courses"
+                  onClick={onClose}
+                  className="text-sm font-medium text-ink-800 dark:text-paper-50"
+                >
+                  My Courses
+                </Link>
+                <Link
+                  to="/instructor/course-create"
+                  onClick={onClose}
+                  className="text-sm font-medium text-ink-800 dark:text-paper-50"
+                >
+                  Create Course
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/my-learning"
+                onClick={onClose}
+                className="text-sm font-medium text-ink-800 dark:text-paper-50"
+              >
+                My Learning
+              </Link>
+            )}
           </div>
         </motion.div>
       )}

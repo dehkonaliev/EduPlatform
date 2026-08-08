@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Moon, Sun } from "lucide-react";
 import { Logo } from "./Logo";
@@ -17,10 +17,13 @@ interface CurrentUser {
 
 interface NavbarProps {
   user?: CurrentUser | null;
+  isInstructor?: boolean;
   onLogout?: () => void;
+  /** Rendered next to the theme toggle when a user is logged in. */
+  notificationBell?: ReactNode;
 }
 
-export function Navbar({ user, onLogout }: NavbarProps) {
+export function Navbar({ user, isInstructor = false, onLogout, notificationBell }: NavbarProps) {
   const { theme, toggleTheme } = useTheme();
   const scrolled = useScrolled();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,18 +40,37 @@ export function Navbar({ user, onLogout }: NavbarProps) {
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Logo />
 
-        <Link
-          to="/my-learning"
-          className="hidden shrink-0 text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400 md:block"
-        >
-          My Learning
-        </Link>
+        {isInstructor ? (
+          <div className="hidden shrink-0 items-center gap-5 md:flex">
+            <Link
+              to="/instructor/courses"
+              className="text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400"
+            >
+              My Courses
+            </Link>
+            <Link
+              to="/instructor/course-create"
+              className="text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400"
+            >
+              Create Course
+            </Link>
+          </div>
+        ) : (
+          <Link
+            to="/my-learning"
+            className="hidden shrink-0 text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400 md:block"
+          >
+            My Learning
+          </Link>
+        )}
 
         <div className="hidden flex-1 justify-center md:flex">
-          <SearchBar />
+          <SearchBar instructorMode={isInstructor} />
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {user && notificationBell}
+
           <button
             type="button"
             onClick={toggleTheme}
@@ -72,7 +94,12 @@ export function Navbar({ user, onLogout }: NavbarProps) {
           </button>
 
           {user ? (
-            <ProfileMenu name={user.name} avatarUrl={user.avatarUrl} onLogout={onLogout} />
+            <ProfileMenu
+              name={user.name}
+              avatarUrl={user.avatarUrl}
+              isInstructor={isInstructor}
+              onLogout={onLogout}
+            />
           ) : (
             <div className="hidden items-center gap-2 sm:flex">
               <Link
@@ -101,7 +128,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
         </div>
       </nav>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} isInstructor={isInstructor} />
     </header>
   );
 }

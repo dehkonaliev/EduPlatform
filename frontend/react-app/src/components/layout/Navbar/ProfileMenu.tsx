@@ -7,6 +7,7 @@ import {
   Repeat,
   ShoppingBag,
   Receipt,
+  Wallet,
   LogOut,
   ChevronDown,
 } from "lucide-react";
@@ -14,7 +15,7 @@ import { useOnClickOutside } from "../../../hooks/useOnClicksOutSide";
 import { cn } from "../../../lib/utils";
 import type { ProfileMenuItem } from "../../../types/Navigation";
 
-const MENU_ITEMS: ProfileMenuItem[] = [
+const STUDENT_MENU_ITEMS: ProfileMenuItem[] = [
   { label: "My Profile", href: "/profile", icon: User },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Subscriptions", href: "/subscriptions", icon: Repeat, dividerBefore: true },
@@ -22,16 +23,26 @@ const MENU_ITEMS: ProfileMenuItem[] = [
   { label: "Transactions", href: "/transactions", icon: Receipt },
 ];
 
+const INSTRUCTOR_MENU_ITEMS: ProfileMenuItem[] = [
+  { label: "My Profile", href: "/profile", icon: User },
+  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "My Balance", href: "/balance", icon: Wallet, dividerBefore: true },
+  { label: "Transactions", href: "/transactions", icon: Receipt },
+];
+
 interface ProfileMenuProps {
   name: string;
   avatarUrl?: string;
+  isInstructor?: boolean;
   onLogout?: () => void;
 }
 
-export function ProfileMenu({ name, avatarUrl, onLogout }: ProfileMenuProps) {
+export function ProfileMenu({ name, avatarUrl, isInstructor = false, onLogout }: ProfileMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   useOnClickOutside(containerRef, () => setOpen(false));
+
+  const menuItems = isInstructor ? INSTRUCTOR_MENU_ITEMS : STUDENT_MENU_ITEMS;
 
   const initials = name
     .split(" ")
@@ -85,7 +96,7 @@ export function ProfileMenu({ name, avatarUrl, onLogout }: ProfileMenuProps) {
               </p>
             </div>
 
-            {MENU_ITEMS.map(({ label, href, icon: Icon, dividerBefore }) => (
+            {menuItems.map(({ label, href, icon: Icon, dividerBefore }) => (
               <div key={href}>
                 {dividerBefore && (
                   <div className="my-1 border-t border-paper-200 dark:border-ink-800" />

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 import { RequireAuth } from "./providers/RequireAuth";
+import { RequireInstructor } from "./providers/RequireInstructor";
 import { ToastProvider } from "./providers/ToastProvider";
 import HomePage from "./pages/Home";
 import LoginPage from "./pages/auth/Login";
@@ -12,6 +13,17 @@ import ProfilePage from "./pages/Profile";
 import CourseDetailPage from "./pages/CourseDetail";
 import MyLearningPage from "./pages/MyLearning";
 import LessonPage from "./pages/Lesson";
+import InstructorCoursesPage from "./pages/instructor/InstructorCourses";
+import InstructorCoursesLayout from "./pages/instructor/InstructorCoursesLayout";
+import CreateCoursePage from "./pages/instructor/CreateCourse";
+import CreateModulePage from "./pages/instructor/CreateModule";
+import CreateLessonPage from "./pages/instructor/CreateLesson";
+import EditCoursePage from "./pages/instructor/EditCourse";
+import EditModulePage from "./pages/instructor/EditModule";
+import EditLessonPage from "./pages/instructor/EditLesson";
+import CreateQuizPage from "./pages/instructor/CreateQuiz";
+import QuizBuilderPage from "./pages/instructor/QuizBuilder";
+import CourseManagePage from "./pages/instructor/CourseManage";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ProfileSection from "./pages/settings/ProfileSection";
 import StudentSection from "./pages/settings/StudentSection";
@@ -100,6 +112,93 @@ export default function App() {
                   <RequireAuth>
                     <MyPurchasesPage />
                   </RequireAuth>
+                }
+              />
+              <Route
+                path="/instructor/courses"
+                element={
+                  <RequireInstructor>
+                    <InstructorCoursesLayout />
+                  </RequireInstructor>
+                }
+              >
+                <Route index element={<InstructorCoursesPage />} />
+                <Route path="draft" element={<InstructorCoursesPage status="DRAFT" />} />
+                <Route path="review" element={<InstructorCoursesPage status="IN_REVIEW" />} />
+                <Route path="rejected" element={<InstructorCoursesPage status="REJECTED" />} />
+                <Route path="published" element={<InstructorCoursesPage status="PUBLISHED" />} />
+                <Route path="archived" element={<InstructorCoursesPage status="ARCHIVED" />} />
+              </Route>
+              <Route
+                path="/instructor/course-create"
+                element={
+                  <RequireInstructor>
+                    <CreateCoursePage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/module-create"
+                element={
+                  <RequireInstructor>
+                    <CreateModulePage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/lesson-create"
+                element={
+                  <RequireInstructor>
+                    <CreateLessonPage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/course/:courseId/manage"
+                element={
+                  <RequireInstructor>
+                    <CourseManagePage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/course/:courseId/edit"
+                element={
+                  <RequireInstructor>
+                    <EditCoursePage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/module/:moduleId/edit"
+                element={
+                  <RequireInstructor>
+                    <EditModulePage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/lesson/:lessonId/edit"
+                element={
+                  <RequireInstructor>
+                    <EditLessonPage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/quiz-create"
+                element={
+                  <RequireInstructor>
+                    <CreateQuizPage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/quiz/:quizId"
+                element={
+                  <RequireInstructor>
+                    <QuizBuilderPage />
+                  </RequireInstructor>
                 }
               />
               {/* Add /my-learning, /courses/:slug, /certificates, etc. as those pages get built */}

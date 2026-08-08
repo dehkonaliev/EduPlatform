@@ -78,7 +78,7 @@ class CourseDetailAPIView(APIView):
 
 
 class ModuleCreateAPIView(APIView):
-    permission_classes = [IsInstructorAndOwner]
+    permission_classes = [IsAuthenticated, IsInstructorAndOwner]
     def post(self, request):
         user = request.user
         serializer = ModuleCreateUpdateSerializer(data=request.data, context={'request': request})
@@ -98,7 +98,7 @@ class ModuleUpdateDeleteAPIView(APIView):
         
         self.check_object_permissions(request, module.course)
         
-        serializer = ModuleCreateUpdateSerializer(instance=module, data=request.data, partial=True)
+        serializer = ModuleCreateUpdateSerializer(instance=module, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
@@ -171,7 +171,12 @@ class LessonDetailAPIView(APIView):
         lesson = Lesson.objects.filter(pk=pk).first()
         if not lesson:
             return error_response(message="Lesson not found", status_code=404)
-        if lesson.module.course.status != Course.Status.PUBLISHED:
+        
+        # Block non-published lessons for everyone EXCEPT the course owner
+        # (instructors edit draft/in-review/rejected courses, students must
+        # only see published content).
+        is_owner = request.user.is_authenticated and request.user == lesson.module.course.instructor
+        if lesson.module.course.status != Course.Status.PUBLISHED and not is_owner:
             return error_response(message="Lesson not found", status_code=404)
         
         self.check_object_permissions(request, lesson.module.course)
@@ -252,7 +257,9 @@ class FilteredCoursesInstructorAPIView(APIView):
         pricing_type = request.query_params.get('pricing_type')
         rating = request.query_params.get('rating')
         
-        courses = Course.objects.filter(status=Course.Status.PUBLISHED, instructor=request.user)
+        # The instructor's OWN courses across ALL statuses (draft, in review,
+        # rejected, published, archived) so they can manage their whole catalog.
+        courses = Course.objects.filter(instructor=request.user)
         
         if search:
             courses = courses.filter(
@@ -375,4 +382,20 @@ class InstructorsAPIView(APIView):
         ]
 
         return success_response(message="Instructors", data=data)
+    
+    
+class SendToReview(APIView):
+    permission_classes = [IsInstructorAndOwner]
+    def patch(self, request, pk):
+        course = Course.objects.filter(pk=pk).first()
+        if not course:
+            return error_response(message="Course not found", status_code=404)
+        if course.status not in ['DRAFT', 'REJECTED']:
+            return error_response(message="To send review your course status must be Draft or Rejected!")
+        self.check_object_permissions(request, course)
+        course.status = "IN_REVIEW"
+        course.save()
+        serializer = CourseInfoSerializer(course)
+        
+        return success_response(message="Course sent to review!", data=serializer.data)
     

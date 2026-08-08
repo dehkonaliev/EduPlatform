@@ -1,4 +1,5 @@
 import { Navbar } from "./components/layout/Navbar/Navbar";
+import { NotificationBell } from "./components/layout/Navbar/NotificationBell";
 import { useAuth } from "./providers/AuthProvider";
 import { resolveMediaUrl } from "./lib/media";
 
@@ -19,7 +20,9 @@ export function AppNavbar() {
             }
           : null
       }
+      isInstructor={user?.user_role === "INSTRUCTOR"}
       onLogout={logout}
+      notificationBell={<NotificationBell />}
     />
   );
 }

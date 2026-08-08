@@ -48,9 +48,8 @@ class Subscription(BaseModel):
     expires_at = models.DateTimeField()
     
     def save(self, *args, **kwargs):
-        if not self.expires_at:
-            days = self.subscription_plan.period_days
-            expiry_date = timezone.now() + timedelta(days=days)
+        days = self.subscription_plan.period_days
+        expiry_date = timezone.now() + timedelta(days=days)
         self.expires_at = expiry_date
         return super().save(*args, **kwargs)
     

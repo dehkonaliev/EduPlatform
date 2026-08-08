@@ -18,10 +18,11 @@
 | Email notifications -                ✅
 | Notification settings -              ❌
 
+
 | ### LEADERS
 | -------------------------------------
 | XP given for lesson -                ✅
-| XP for QUIZZES -                     ❌
+| XP for QUIZZES -                     ✅
 | Streaks -                            ❌
 | levels -                             ❌
 | Friend Request -                     ❌
@@ -103,7 +104,7 @@ QUIZZES SOLVE -                      ✅
 | Buy course -                         ✅
 |
 | Transactions -                       ✅
-| Subscriptions -                      ✅
+| Subscriptions -                      ❌
 |
 |
 | <<< INSTRUCTORS >>>

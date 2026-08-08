@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (CourseCreateAPIView, CategoryAPIView, TagAPIView, CourseUpDelAPIView, ModuleCreateAPIView, ModuleUpdateDeleteAPIView,
     LessonCreateAPIView, LessonUpDelAPIView, CourseDetailAPIView, ModuleDetailAPIView, LessonDetailAPIView, FilteredCoursesAPIView,
-    FilteredCoursesInstructorAPIView, GetMyFeedAPIView, InstructorsAPIView
+    FilteredCoursesInstructorAPIView, GetMyFeedAPIView, InstructorsAPIView, SendToReview
 )
 
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('categories', CategoryAPIView.as_view()),
     path('tags', TagAPIView.as_view()),
     path('instructors', InstructorsAPIView.as_view()),
+    path('send-to-review/<uuid:pk>', SendToReview.as_view()),
     
     #COURSES
     path('course-create', CourseCreateAPIView.as_view()),

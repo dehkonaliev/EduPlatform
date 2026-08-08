@@ -6,39 +6,14 @@ import { CourseCard } from "../features/courses/components/CourseCard";
 import { CourseCardSkeleton } from "../features/courses/components/CourseCardSkeleton";
 import { useCourseSearch } from "../features/courses/hooks/useCourseSearch";
 import { useSearchOptions } from "../features/courses/hooks/useSearchOptions";
-import { LEVEL_META } from "../features/courses/constants";
-import type { CourseLevel, PricingType } from "../features/courses/types";
+import {
+  LANGUAGE_OPTIONS,
+  LEVEL_OPTIONS,
+  PRICING_TYPE_OPTIONS,
+  RATING_OPTIONS,
+} from "../features/courses/constants";
 
 const SKELETON_COUNT = 8;
-
-const LEVEL_OPTIONS = (Object.keys(LEVEL_META) as CourseLevel[]).map((level) => ({
-  value: level,
-  label: LEVEL_META[level].label,
-}));
-
-const LANGUAGES: { value: string; label: string }[] = [
-  { value: "en", label: "English" },
-  { value: "uz", label: "Uzbek" },
-  { value: "ru", label: "Russian" },
-  { value: "es", label: "Spanish" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" },
-  { value: "zh", label: "Chinese" },
-  { value: "ar", label: "Arabic" },
-];
-
-const PRICING_TYPES: { value: PricingType; label: string }[] = [
-  { value: "FREE", label: "Free" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "SPECIAL", label: "Special" },
-];
-
-const RATINGS: { value: string; label: string }[] = [
-  { value: "3", label: "3.0+ stars" },
-  { value: "4", label: "4.0+ stars" },
-  { value: "4.5", label: "4.5+ stars" },
-  { value: "5", label: "5.0 stars" },
-];
 
 export default function SearchCoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -172,19 +147,19 @@ export default function SearchCoursesPage() {
               label="Language"
               value={filters.language ?? ""}
               onChange={(value) => setFilter("language", value)}
-              options={LANGUAGES}
+              options={LANGUAGE_OPTIONS}
             />
             <FilterSelect
               label="Pricing"
               value={filters.pricing_type ?? ""}
               onChange={(value) => setFilter("pricing_type", value)}
-              options={PRICING_TYPES}
+              options={PRICING_TYPE_OPTIONS}
             />
             <FilterSelect
               label="Rating"
               value={filters.rating ?? ""}
               onChange={(value) => setFilter("rating", value)}
-              options={RATINGS}
+              options={RATING_OPTIONS}
             />
           </div>
         </div>

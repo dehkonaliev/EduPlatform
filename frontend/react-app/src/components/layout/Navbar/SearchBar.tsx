@@ -5,9 +5,12 @@ import { cn } from "../../../lib/utils";
 
 interface SearchBarProps {
   className?: string;
+  /** Instructor mode searches the instructor's OWN courses and submits to
+   * /instructor/courses?search=… instead of the public /courses search. */
+  instructorMode?: boolean;
 }
 
-export function SearchBar({ className }: SearchBarProps) {
+export function SearchBar({ className, instructorMode = false }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +36,9 @@ export function SearchBar({ className }: SearchBarProps) {
     event.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
-    navigate(`/courses?search=${encodeURIComponent(trimmed)}`);
+    navigate(
+      `${instructorMode ? "/instructor/courses" : "/courses"}?search=${encodeURIComponent(trimmed)}`,
+    );
     inputRef.current?.blur();
   }
 
@@ -55,7 +60,9 @@ export function SearchBar({ className }: SearchBarProps) {
         onChange={(event) => setQuery(event.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder="Search for courses, instructors, topics..."
+        placeholder={
+          instructorMode ? "Search your courses…" : "Search for courses, instructors, topics..."
+        }
         className={cn(
           "w-full rounded-full border bg-paper-100 py-2.5 pl-10 pr-16 text-sm text-ink-950 placeholder:text-ink-500/70 outline-none transition-all duration-200",
           "dark:bg-ink-900 dark:text-paper-50 dark:placeholder:text-ink-300/60",
