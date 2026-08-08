@@ -13,7 +13,7 @@ const SKELETON_COUNT = 3;
 
 export default function MyLearningPage() {
   const [status, setStatus] = useState<EnrollmentStatus>("ACTIVE");
-  const { enrollments, isLoading, error } = useMyEnrollments(status);
+  const { enrollments, isLoading, error, refetch } = useMyEnrollments(status);
 
   return (
     <>
@@ -58,7 +58,7 @@ export default function MyLearningPage() {
             ))
           ) : enrollments.length > 0 ? (
             enrollments.map((enrollment) => (
-              <EnrollmentCard key={enrollment.id} enrollment={enrollment} />
+              <EnrollmentCard key={enrollment.id} enrollment={enrollment} onDropped={refetch} />
             ))
           ) : (
             <EmptyState status={status} />

@@ -4,6 +4,7 @@ from .models import Category, Course, Lesson, Module, Tag
 from django.db.models import Count
 from django.utils import timezone
 from enrollments.models import Enrollment
+from authentication.models import CustomUser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from baseapp.utils import success_response, error_response
@@ -353,4 +354,25 @@ class TagAPIView(APIView):
         serializer = TagSerializer(tags, many=True)
         
         return success_response(message="Tag list", data=serializer.data)
+
+
+class InstructorsAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        instructors = CustomUser.objects.filter(
+            user_role=CustomUser.UserRole.INSTRUCTOR,
+            courses__status=Course.Status.PUBLISHED,
+        ).distinct()
+
+        data = [
+            {
+                'id': instructor.pk,
+                'full_name': f"{instructor.first_name} {instructor.last_name}".strip()
+                    or (instructor.email or "Instructor"),
+                'photo': instructor.photo.url if instructor.photo else None,
+            }
+            for instructor in instructors
+        ]
+
+        return success_response(message="Instructors", data=data)
     

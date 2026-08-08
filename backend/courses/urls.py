@@ -1,13 +1,14 @@
 from django.urls import path
 from .views import (CourseCreateAPIView, CategoryAPIView, TagAPIView, CourseUpDelAPIView, ModuleCreateAPIView, ModuleUpdateDeleteAPIView,
     LessonCreateAPIView, LessonUpDelAPIView, CourseDetailAPIView, ModuleDetailAPIView, LessonDetailAPIView, FilteredCoursesAPIView,
-    FilteredCoursesInstructorAPIView, GetMyFeedAPIView
+    FilteredCoursesInstructorAPIView, GetMyFeedAPIView, InstructorsAPIView
 )
 
 
 urlpatterns = [
     path('categories', CategoryAPIView.as_view()),
     path('tags', TagAPIView.as_view()),
+    path('instructors', InstructorsAPIView.as_view()),
     
     #COURSES
     path('course-create', CourseCreateAPIView.as_view()),

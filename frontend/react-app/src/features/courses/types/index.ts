@@ -32,6 +32,46 @@ export interface CourseSummary {
   instructor: CourseInstructor;
 }
 
+/** Option shapes for the search/filter page. */
+export interface CategorySummary {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
+export interface TagSummary {
+  id: string;
+  name: string;
+}
+
+export interface InstructorSummary {
+  id: string;
+  full_name: string;
+  photo: string | null;
+}
+
+/** Query params accepted by GET /api/courses/filtered-courses. */
+export interface CourseSearchParams {
+  search?: string;
+  instructor?: string; // instructor user UUID
+  category?: string; // category UUID
+  tag?: string; // tag name
+  level?: CourseLevel;
+  language?: string;
+  pricing_type?: PricingType;
+  rating?: string; // "3", "4", "4.5", "5" — courses with average_rating >= value
+}
+
+/** Filtered-courses returns DRF pagination directly (no success/data envelope):
+ * { count, next, previous, results }. */
+export interface PaginatedCourseResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CourseSummary[];
+}
+
 /**
  * Instructor shape on the DETAIL endpoint — different from CourseInstructor
  * above (no `id`, split first/last name instead of full_name). Don't merge

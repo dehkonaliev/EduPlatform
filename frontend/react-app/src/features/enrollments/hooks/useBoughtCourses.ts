@@ -1,31 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
 import { enrollmentsApi } from "../api/enrollmentsApi";
 import { parseApiError } from "../../../lib/api/parseApiError";
-import type { EnrollmentStatus, MyEnrollment } from "../types";
+import type { MyEnrollment } from "../types";
 
-interface UseMyEnrollmentsResult {
-  enrollments: MyEnrollment[];
+interface UseBoughtCoursesResult {
+  courses: MyEnrollment[];
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
-export function useMyEnrollments(status: EnrollmentStatus): UseMyEnrollmentsResult {
-  const [enrollments, setEnrollments] = useState<MyEnrollment[]>([]);
+export function useBoughtCourses(): UseBoughtCoursesResult {
+  const [courses, setCourses] = useState<MyEnrollment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const data = await enrollmentsApi.fetchMyEnrollments(status);
-      setEnrollments(data);
+      const data = await enrollmentsApi.fetchMyEnrollments();
+      setCourses(data.filter((enrollment) => enrollment.is_bought));
       setError(null);
     } catch (err) {
       setError(parseApiError(err).generalMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [status]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,8 +34,8 @@ export function useMyEnrollments(status: EnrollmentStatus): UseMyEnrollmentsResu
       setIsLoading(true);
       setError(null);
       try {
-        const data = await enrollmentsApi.fetchMyEnrollments(status);
-        if (!cancelled) setEnrollments(data);
+        const data = await enrollmentsApi.fetchMyEnrollments();
+        if (!cancelled) setCourses(data.filter((enrollment) => enrollment.is_bought));
       } catch (err) {
         if (!cancelled) setError(parseApiError(err).generalMessage);
       } finally {
@@ -47,7 +47,7 @@ export function useMyEnrollments(status: EnrollmentStatus): UseMyEnrollmentsResu
     return () => {
       cancelled = true;
     };
-  }, [status]);
+  }, []);
 
-  return { enrollments, isLoading, error, refetch: load };
+  return { courses, isLoading, error, refetch: load };
 }

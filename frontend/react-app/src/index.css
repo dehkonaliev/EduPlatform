@@ -54,6 +54,12 @@
 }
 
 @layer base {
+  /* Reserve the scrollbar gutter so content doesn't shift sideways when the
+   * page height changes (e.g. skeleton → loaded content, short → long page). */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-paper-50 text-ink-950 dark:bg-ink-950 dark:text-paper-50;
     @apply font-sans antialiased;

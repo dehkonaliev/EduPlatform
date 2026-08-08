@@ -16,22 +16,22 @@ export const TRANSACTION_TYPE_META: Record<WalletTransactionType, TransactionTyp
     label: "Replenish",
     icon: PlusCircle,
     sign: "+",
-    badgeClassName: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
-    amountClassName: "text-teal-700 dark:text-teal-400",
+    badgeClassName: "bg-green-500/10 text-green-700 dark:text-green-400",
+    amountClassName: "text-green-700 dark:text-green-400",
   },
   SUBSCRIPTION: {
     label: "Subscription",
     icon: Repeat,
     sign: "-",
-    badgeClassName: "bg-ember-500/10 text-ember-700 dark:text-ember-400",
-    amountClassName: "text-ember-700 dark:text-ember-400",
+    badgeClassName: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+    amountClassName: "text-yellow-700 dark:text-yellow-400",
   },
   PAID_COURSE: {
     label: "Course purchase",
     icon: ShoppingBag,
     sign: "-",
-    badgeClassName: "bg-ink-500/10 text-ink-700 dark:text-ink-300",
-    amountClassName: "text-ink-800 dark:text-ink-200",
+    badgeClassName: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+    amountClassName: "text-yellow-700 dark:text-yellow-400",
   },
 };
 

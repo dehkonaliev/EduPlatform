@@ -20,6 +20,9 @@ import PasswordSection from "./pages/settings/PasswordSection";
 import AccountSection from "./pages/settings/AccountSection";
 import SubscriptionsPage from "./pages/Subscriptions";
 import TransactionsPage from "./pages/Transactions";
+import MyPurchasesPage from "./pages/MyPurchases";
+import SearchCoursesPage from "./pages/SearchCourses";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 export default function App() {
   return (
@@ -27,12 +30,14 @@ export default function App() {
       <AuthProvider>
         <ToastProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/password-reset" element={<PasswordResetPage />} />
               <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+              <Route path="/courses" element={<SearchCoursesPage />} />
               <Route path="/courses/:id" element={<CourseDetailPage />} />
               <Route
                 path="/my-learning"
@@ -86,6 +91,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <TransactionsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/purchases"
+                element={
+                  <RequireAuth>
+                    <MyPurchasesPage />
                   </RequireAuth>
                 }
               />

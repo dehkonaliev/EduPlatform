@@ -6,7 +6,6 @@ import {
   Settings,
   Repeat,
   ShoppingBag,
-  Wallet,
   Receipt,
   LogOut,
   ChevronDown,
@@ -20,7 +19,6 @@ const MENU_ITEMS: ProfileMenuItem[] = [
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Subscriptions", href: "/subscriptions", icon: Repeat, dividerBefore: true },
   { label: "My Purchases", href: "/purchases", icon: ShoppingBag },
-  { label: "Payments", href: "/payments", icon: Wallet },
   { label: "Transactions", href: "/transactions", icon: Receipt },
 ];
 

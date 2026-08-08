@@ -1,12 +1,18 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Loader2, Trash2 } from "lucide-react";
 import { resolveMediaUrl } from "../../../lib/media";
+import { cn } from "../../../lib/utils";
+import { useToast } from "../../../providers/ToastProvider";
 import { LEVEL_META } from "../../courses/constants";
 import { ENROLLMENT_STATUS_META } from "../constants";
+import { useDropEnrollment } from "../hooks/useDropEnrollment";
 import type { MyEnrollment } from "../types";
 
 interface EnrollmentCardProps {
   enrollment: MyEnrollment;
+  /** Called after the enrollment is dropped so the parent can refetch. */
+  onDropped?: () => void | Promise<void>;
 }
 
 function formatDate(iso: string): string {
@@ -17,7 +23,7 @@ function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-export function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
+export function EnrollmentCard({ enrollment, onDropped }: EnrollmentCardProps) {
   const { course } = enrollment;
   const thumbnailUrl = resolveMediaUrl(course.thumbnail);
   const instructorPhotoUrl = resolveMediaUrl(course.instructor.photo);
@@ -25,6 +31,8 @@ export function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
   const progressRounded = Math.round(progress);
   const statusMeta = ENROLLMENT_STATUS_META[enrollment.status];
   const levelMeta = LEVEL_META[course.level];
+
+  const canDrop = enrollment.status === "ACTIVE" || enrollment.status === "DEACTIVATED";
 
   // Resume where the student left off when the backend knows the lesson;
   // otherwise jump straight into the first lesson, or fall back to the
@@ -135,8 +143,63 @@ export function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
           >
             Course page
           </Link>
+          {canDrop && (
+            <DropCourseButton enrollmentId={enrollment.id} onDropped={onDropped} />
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DropCourseButton({
+  enrollmentId,
+  onDropped,
+}: {
+  enrollmentId: string;
+  onDropped?: EnrollmentCardProps["onDropped"];
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const { drop, isDropping, error } = useDropEnrollment();
+  const { showToast } = useToast();
+
+  async function handleClick() {
+    if (!confirming) {
+      setConfirming(true);
+      window.setTimeout(() => setConfirming(false), 4000);
+      return;
+    }
+    const ok = await drop(enrollmentId);
+    setConfirming(false);
+    if (ok) {
+      showToast("Course dropped");
+      await onDropped?.();
+    }
+  }
+
+  return (
+    <div className="ml-auto flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isDropping}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+          confirming
+            ? "border-red-300 bg-red-500/10 text-red-700 hover:bg-red-500/15 dark:border-red-500/30 dark:text-red-400"
+            : "border-paper-200 text-ink-500 hover:border-red-300 hover:text-red-600 dark:border-ink-800 dark:text-ink-300 dark:hover:border-red-500/30 dark:hover:text-red-400",
+        )}
+      >
+        {isDropping ? (
+          <Loader2 size={13} className="animate-spin" />
+        ) : confirming ? (
+          <AlertTriangle size={13} />
+        ) : (
+          <Trash2 size={13} />
+        )}
+        {isDropping ? "Dropping…" : confirming ? "Confirm drop?" : "Drop course"}
+      </button>
+      {error && <span className="text-[11px] text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }

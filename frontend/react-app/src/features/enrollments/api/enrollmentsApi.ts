@@ -22,4 +22,13 @@ export const enrollmentsApi = {
     );
     return data.data;
   },
+
+  /** PATCH /api/enrollments/enrollment-drop/<uuid:pk> — drops the enrollment
+   * (only allowed from ACTIVE/DEACTIVATED). Resolves with the backend message. */
+  dropEnrollment: async (enrollmentId: string): Promise<string> => {
+    const { data } = await apiClient.patch<ApiEnvelope<unknown>>(
+      `/enrollments/enrollment-drop/${enrollmentId}`,
+    );
+    return data.message;
+  },
 };
