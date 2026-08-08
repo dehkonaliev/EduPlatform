@@ -35,6 +35,13 @@ export function MobileMenu({ open, onClose, isInstructor = false }: MobileMenuPr
             {isInstructor ? (
               <>
                 <Link
+                  to="/instructor"
+                  onClick={onClose}
+                  className="text-sm font-medium text-ink-800 dark:text-paper-50"
+                >
+                  Dashboard
+                </Link>
+                <Link
                   to="/instructor/courses"
                   onClick={onClose}
                   className="text-sm font-medium text-ink-800 dark:text-paper-50"

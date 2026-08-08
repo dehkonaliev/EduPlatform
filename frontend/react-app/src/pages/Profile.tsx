@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Award,
@@ -22,6 +23,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { useRoleProfile } from "../features/profile/hooks/userRoleProfile";
 import { resolveMediaUrl } from "../lib/media";
 import { cn } from "../lib/utils";
+import { ImageLightbox } from "../components/ui/ImageLightbox";
 
 function StatCard({
   icon: Icon,
@@ -59,6 +61,7 @@ function VerifiedBadge({ label, verified }: { label: string; verified: boolean }
 export default function ProfilePage() {
   const { user } = useAuth();
   const { studentProfile, instructorProfile, isLoading, error } = useRoleProfile();
+  const [avatarOpen, setAvatarOpen] = useState(false);
 
   if (!user) return null; // RequireAuth guarantees this won't render for long
 
@@ -126,11 +129,19 @@ export default function ProfilePage() {
             {/* Bigger avatar with a level badge overlapping the corner */}
             <div className="relative shrink-0">
               {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt={fullName}
-                  className="h-28 w-28 rounded-full object-cover ring-4 ring-white/20 sm:h-32 sm:w-32"
-                />
+                <button
+                  type="button"
+                  onClick={() => setAvatarOpen(true)}
+                  aria-label={`View ${fullName}'s photo enlarged`}
+                  title="View larger photo"
+                  className="cursor-zoom-in"
+                >
+                  <img
+                    src={photoUrl}
+                    alt={fullName}
+                    className="h-28 w-28 rounded-full object-cover ring-4 ring-white/20 sm:h-32 sm:w-32"
+                  />
+                </button>
               ) : (
                 <span className="flex h-28 w-28 items-center justify-center rounded-full bg-ember-400 text-3xl font-semibold text-ink-950 ring-4 ring-white/20 sm:h-32 sm:w-32">
                   {initials}
@@ -200,6 +211,15 @@ export default function ProfilePage() {
               />
             ))}
           </div>
+        )}
+
+        {photoUrl && (
+          <ImageLightbox
+            open={avatarOpen}
+            src={photoUrl}
+            alt={fullName}
+            onClose={() => setAvatarOpen(false)}
+          />
         )}
 
         {/* Student view */}
@@ -285,11 +305,19 @@ export default function ProfilePage() {
         {/* Instructor view — field shapes unconfirmed, see features/profile/types */}
         {!isLoading && instructorProfile && (
           <section className="mt-8 flex flex-col gap-3">
-            {instructorProfile.headline && (
-              <p className="text-base font-medium text-ink-900 dark:text-paper-100">
-                {instructorProfile.headline}
-              </p>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {instructorProfile.headline && (
+                <p className="text-base font-medium text-ink-900 dark:text-paper-100">
+                  {instructorProfile.headline}
+                </p>
+              )}
+              <Link
+                to="/settings/instructor"
+                className="inline-flex items-center gap-1 rounded-full border border-paper-200 px-3 py-1 text-xs font-medium text-ink-700 transition-colors hover:border-ember-400/60 hover:text-ember-600 dark:border-ink-800 dark:text-ink-200 dark:hover:text-ember-400"
+              >
+                <Pencil size={11} /> Edit
+              </Link>
+            </div>
             <p className="text-sm text-ink-600 dark:text-ink-300">
               {instructorProfile.bio || "No bio yet."}
             </p>

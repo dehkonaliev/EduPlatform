@@ -1,6 +1,11 @@
 import { apiClient } from "../../../lib/api/client";
 import type { ApiEnvelope } from "../../../lib/api/types";
-import type { InstructorProfile, StudentProfile, UpdateStudentProfilePayload } from "../types";
+import type {
+  InstructorProfile,
+  StudentProfile,
+  UpdateInstructorProfilePayload,
+  UpdateStudentProfilePayload,
+} from "../types";
 
 export const profileApi = {
   fetchStudentProfile: async (): Promise<StudentProfile> => {
@@ -17,6 +22,17 @@ export const profileApi = {
   updateStudentProfile: async (payload: UpdateStudentProfilePayload): Promise<StudentProfile> => {
     const { data } = await apiClient.patch<ApiEnvelope<StudentProfile>>(
       "/profile/student-profile",
+      payload,
+    );
+    return data.data;
+  },
+
+  /** Only headline, bio, linkedin_url, website_url are writable. */
+  updateInstructorProfile: async (
+    payload: UpdateInstructorProfilePayload,
+  ): Promise<InstructorProfile> => {
+    const { data } = await apiClient.patch<ApiEnvelope<InstructorProfile>>(
+      "/profile/instructor-profile",
       payload,
     );
     return data.data;

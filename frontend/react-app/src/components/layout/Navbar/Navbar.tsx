@@ -43,6 +43,12 @@ export function Navbar({ user, isInstructor = false, onLogout, notificationBell 
         {isInstructor ? (
           <div className="hidden shrink-0 items-center gap-5 md:flex">
             <Link
+              to="/instructor"
+              className="text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400"
+            >
+              Dashboard
+            </Link>
+            <Link
               to="/instructor/courses"
               className="text-sm font-semibold text-ink-800 transition-colors hover:text-ember-500 dark:text-paper-100 dark:hover:text-ember-400"
             >

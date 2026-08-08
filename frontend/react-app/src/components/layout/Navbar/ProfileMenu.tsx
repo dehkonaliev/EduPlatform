@@ -24,7 +24,7 @@ const STUDENT_MENU_ITEMS: ProfileMenuItem[] = [
 ];
 
 const INSTRUCTOR_MENU_ITEMS: ProfileMenuItem[] = [
-  { label: "My Profile", href: "/profile", icon: User },
+  { label: "Instructor Profile", href: "/instructor/profile", icon: User },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "My Balance", href: "/balance", icon: Wallet, dividerBefore: true },
   { label: "Transactions", href: "/transactions", icon: Receipt },

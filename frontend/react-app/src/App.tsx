@@ -13,6 +13,7 @@ import ProfilePage from "./pages/Profile";
 import CourseDetailPage from "./pages/CourseDetail";
 import MyLearningPage from "./pages/MyLearning";
 import LessonPage from "./pages/Lesson";
+import InstructorDashboardPage from "./pages/instructor/InstructorDashboard";
 import InstructorCoursesPage from "./pages/instructor/InstructorCourses";
 import InstructorCoursesLayout from "./pages/instructor/InstructorCoursesLayout";
 import CreateCoursePage from "./pages/instructor/CreateCourse";
@@ -24,9 +25,11 @@ import EditLessonPage from "./pages/instructor/EditLesson";
 import CreateQuizPage from "./pages/instructor/CreateQuiz";
 import QuizBuilderPage from "./pages/instructor/QuizBuilder";
 import CourseManagePage from "./pages/instructor/CourseManage";
+import InstructorProfilePage from "./pages/instructor/InstructorProfile";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ProfileSection from "./pages/settings/ProfileSection";
 import StudentSection from "./pages/settings/StudentSection";
+import InstructorSection from "./pages/settings/InstructorSection";
 import PreferencesSection from "./pages/settings/PreferencesSection";
 import PasswordSection from "./pages/settings/PasswordSection";
 import AccountSection from "./pages/settings/AccountSection";
@@ -86,6 +89,7 @@ export default function App() {
                 <Route index element={<Navigate to="profile" replace />} />
                 <Route path="profile" element={<ProfileSection />} />
                 <Route path="student" element={<StudentSection />} />
+                <Route path="instructor" element={<InstructorSection />} />
                 <Route path="preferences" element={<PreferencesSection />} />
                 <Route path="passwords" element={<PasswordSection />} />
                 <Route path="account" element={<AccountSection />} />
@@ -112,6 +116,14 @@ export default function App() {
                   <RequireAuth>
                     <MyPurchasesPage />
                   </RequireAuth>
+                }
+              />
+              <Route
+                path="/instructor"
+                element={
+                  <RequireInstructor>
+                    <InstructorDashboardPage />
+                  </RequireInstructor>
                 }
               />
               <Route
@@ -182,6 +194,14 @@ export default function App() {
                 element={
                   <RequireInstructor>
                     <EditLessonPage />
+                  </RequireInstructor>
+                }
+              />
+              <Route
+                path="/instructor/profile"
+                element={
+                  <RequireInstructor>
+                    <InstructorProfilePage />
                   </RequireInstructor>
                 }
               />

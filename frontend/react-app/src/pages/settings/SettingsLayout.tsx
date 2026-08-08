@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { GraduationCap, KeyRound, ShieldCheck, SlidersHorizontal, User } from "lucide-react";
+import { Briefcase, GraduationCap, KeyRound, ShieldCheck, SlidersHorizontal, User } from "lucide-react";
 import { AppNavbar } from "../../AppNavbar";
 import { useAuth } from "../../providers/AuthProvider";
 import { cn } from "../../lib/utils";
@@ -7,6 +7,7 @@ import { cn } from "../../lib/utils";
 const NAV_ITEMS = [
   { to: "/settings/profile", label: "Profile", icon: User },
   { to: "/settings/student", label: "Student details", icon: GraduationCap, studentOnly: true },
+  { to: "/settings/instructor", label: "Instructor details", icon: Briefcase, instructorOnly: true },
   { to: "/settings/preferences", label: "Preferences", icon: SlidersHorizontal },
   { to: "/settings/passwords", label: "Passwords", icon: KeyRound },
   { to: "/settings/account", label: "Security", icon: ShieldCheck },
@@ -14,7 +15,11 @@ const NAV_ITEMS = [
 
 export default function SettingsLayout() {
   const { user } = useAuth();
-  const items = NAV_ITEMS.filter((item) => !item.studentOnly || user?.user_role === "STUDENT");
+  const items = NAV_ITEMS.filter((item) => {
+    if (item.studentOnly) return user?.user_role === "STUDENT";
+    if (item.instructorOnly) return user?.user_role === "INSTRUCTOR";
+    return true;
+  });
 
   return (
     <>
